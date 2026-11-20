@@ -92,6 +92,51 @@
 .cash-opening-input { display: block; width: 100%; padding: 12px 14px; border: 1px solid var(--color-border); border-radius: 5px; font-size: 25px; color: var(--color-heading); background: var(--color-surface); font-variant-numeric: tabular-nums; }
 .cash-check { display: flex; align-items: center; gap: 8px; margin-top: 14px; line-height: 1.5; font-size: 11px; }
 .cash-opening-dialog footer { gap: 12px; flex-wrap: wrap; }
+.cash-movement-types { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; border: 0; padding: 0; margin: 0 0 20px; }
+.cash-movement-types legend { font-size: 12px; margin-bottom: 9px; }
+.cash-movement-types label { display: flex; align-items: center; gap: 9px; padding: 12px; border: 1px solid var(--color-border); border-radius: 5px; cursor: pointer; }
+.cash-movement-types label:has(input:checked) { border-color: var(--color-accent); background: var(--color-selected); }
+.cash-movement-types strong, .cash-movement-types small { display: block; font-size: 12px; }
+.cash-movement-types small { margin-top: 5px; font-size: 10px; color: var(--color-text-muted); }
+.cash-reason-label { margin-top: 18px; }
+.cash-movement-dialog textarea { width: 100%; resize: vertical; min-height: 58px; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: 5px; background: var(--color-surface); color: var(--color-text); font: inherit; font-size: 12px; }
+.cash-movement-dialog :is(textarea, input):focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.cash-movement-preview { padding: 0 14px 14px; background: var(--color-surface-muted); border-radius: 5px; }
+.cash-movement-dialog .cash-opening-body { padding-block: 16px; }
+.cash-movement-dialog .cash-opening-intro { margin-bottom: 12px; }
+.cash-movement-dialog .cash-identification { margin-bottom: 14px; padding: 10px 14px; }
+.cash-movement-dialog .cash-movement-types { margin-bottom: 14px; }
+.cash-movement-dialog .cash-opening-input { padding-block: 9px; }
+.cash-movement-dialog .cash-reason-label { margin-top: 12px; }
+.cash-movement-dialog .cash-movement-preview { margin-block: 10px; }
+.cash-movement-dialog .cash-movement-preview > div { margin-top: 9px; }
+.sales-dialog.cash-closing-dialog { width: min(720px, calc(100% - 24px)); max-height: calc(100dvh - 24px); overflow: hidden; }
+.cash-closing-dialog[open], .cash-closing-dialog form { display: flex; flex-direction: column; min-height: 0; }
+.cash-closing-dialog .sale-dialog-heading, .cash-closing-dialog footer { flex-shrink: 0; }
+.cash-closing-dialog .cash-closing-body { overflow-y: auto; }
+.cash-closing-body { padding: 16px 24px; }
+.cash-closing-body .cash-identification { margin-bottom: 12px; padding: 10px 14px; }
+.cash-closing-body .cash-opening-intro { font-size: 12px; margin-bottom: 12px; }
+.cash-closing-table { overflow-x: auto; margin-bottom: 16px; }
+.cash-closing-table table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.cash-closing-table :is(th, td) { padding: 10px 8px; border-bottom: 1px solid var(--color-border-soft); text-align: right; font-variant-numeric: tabular-nums; }
+.cash-closing-table thead th { font-size: 10px; color: var(--color-text-muted); font-weight: 500; }
+.cash-closing-table th:first-child { text-align: left; }
+.cash-closing-table th span { display: flex; align-items: center; gap: 6px; }
+.cash-closing-table th small { display: block; font-size: 9px; font-weight: 400; color: var(--color-text-muted); margin-top: 5px; }
+.cash-closing-table input { width: 100%; min-width: 70px; max-width: 120px; padding: 9px; background: var(--color-surface); color: var(--color-heading); border: 1px solid var(--color-border); border-radius: 5px; text-align: right; }
+.cash-closing-body textarea { display: block; width: 100%; padding: 10px; min-height: 56px; resize: vertical; background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); border-radius: 5px; font: inherit; font-size: 12px; }
+.cash-closing-body :is(input, textarea):focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.cash-closing-table .cash-difference { color: var(--color-danger); }
+.cash-closing-values .cash-closing-reason { color: var(--color-text-secondary); overflow-wrap: anywhere; white-space: pre-wrap; }
+.cash-closing-dialog footer { flex-wrap: wrap; }
+@media (max-width: 580px) {
+  .cash-closing-body { padding: 14px; }
+  .cash-closing-table :is(th, td) { padding: 9px 3px; font-size: 10px; }
+  .cash-closing-table th span { gap: 3px; }
+  .cash-closing-table input { min-width: 54px; padding: 8px 4px; }
+  .cash-closing-dialog footer { padding: 14px; }
+}
 @media (min-width: 1700px) { .cash-overview-grid { grid-template-columns: minmax(0, 1fr) 360px; gap: 24px; } .cash-balance { padding: 24px; } .cash-card { padding: 22px; } }
 @media (max-width: 1200px) { .cash-overview-grid { grid-template-columns: 1fr; } .cash-timeline { max-height: 350px; } }
 @media (max-width: 800px) { .cash-page { padding: 20px 16px; } .cash-summary-grid { grid-template-columns: 1fr; } .cash-balance { padding: 16px; } .cash-balance > strong { font-size: 26px; } }

@@ -20,6 +20,7 @@ export type CashSession = {
   openedAt: string
   closedAt?: string
   countedCashCents?: number
+  closing?: { id: string; operator: string; expected: Record<PaymentMethod, number>; counted: Record<PaymentMethod, number>; reason: string }
   sync: 'Pendente' | 'Recebida'
   movements: CashMovement[]
 }
@@ -37,6 +38,24 @@ export function cancellationMovement(sale: Sale): CashMovement {
 }
 export const movementTotal = (movement: CashMovement) => Object.values(movement.amounts).reduce((sum, amount) => sum + amount, 0)
 
+export type ManualCashKind = 'supply' | 'withdrawal'
+export type ManualCashCommand = { id: string; sessionNumber: number; kind: ManualCashKind; amount: number; reason: string; authorized: boolean; at: string }
+
+export function validateCashMovement(sessions: CashSession[], command: ManualCashCommand): string | undefined {
+  if (!sessions.some((session) => session.number === command.sessionNumber && session.terminal === demoTerminal && !session.closedAt)) return 'Este caixa não está aberto neste terminal. Volte ao Caixa e confira a sessão.'
+  if (!command.authorized) return 'Este operador não tem permissão para movimentar o caixa no cenário atual.'
+  if (!['supply', 'withdrawal'].includes(command.kind)) return 'Selecione suprimento ou sangria.'
+  if (!Number.isSafeInteger(command.amount) || command.amount <= 0 || command.amount > 999999999) return 'Informe um valor maior que zero, com até duas casas decimais e sem separador de milhar.'
+  if (!command.reason.trim() || command.reason.trim().length > 300) return 'Informe um motivo de até 300 caracteres.'
+  if (!command.id.trim() || !Number.isFinite(Date.parse(command.at))) return 'Movimento inválido. Feche e abra novamente o formulário.'
+}
+
+export function registerCashMovement(sessions: CashSession[], command: ManualCashCommand): CashSession[] {
+  if (validateCashMovement(sessions, command) || sessions.some((session) => session.movements.some((movement) => movement.id === command.id))) return sessions
+  const movement: CashMovement = { id: command.id, kind: command.kind, description: (command.kind === 'supply' ? 'Suprimento' : 'Sangria') + ' · ' + command.reason.trim(), at: command.at, operator: demoOperator, amounts: { Dinheiro: command.amount * (command.kind === 'supply' ? 1 : -1) } }
+  return sessions.map((session) => session.number === command.sessionNumber ? { ...session, sync: 'Pendente', movements: [...session.movements, movement] } : session)
+}
+
 export function summarizeCash(session: CashSession) {
   const sumKind = (kind: CashMovement['kind']) => session.movements.filter((movement) => movement.kind === kind).reduce((sum, movement) => sum + movementTotal(movement), 0)
   const byMethod = Object.fromEntries(cashMethods.map((method) => [method, session.movements.reduce((sum, movement) => sum + (movement.amounts[method] ?? 0), 0)])) as Record<PaymentMethod, number>
@@ -49,6 +68,25 @@ export function openDemoSession(sessions: CashSession[], amount: number, at: str
   const number = Math.max(26, ...sessions.map((session) => session.number)) + 1
   const session: CashSession = { number, terminal: demoTerminal, operator: demoOperator, openedAt: at, sync: 'Pendente', movements: [{ id: 'opening-' + number, kind: 'opening', description: 'Abertura de caixa', at, operator: demoOperator, amounts: { Dinheiro: amount } }] }
   return [session, ...sessions]
+}
+
+export type CloseCashCommand = { id: string; sessionNumber: number; counted: Record<PaymentMethod, number>; reason: string; authorized: boolean; at: string; movementIds: string[] }
+export function validateCashClosing(sessions: CashSession[], command: CloseCashCommand): string | undefined {
+  const session = sessions.find((item) => item.number === command.sessionNumber && item.terminal === demoTerminal && !item.closedAt)
+  if (!session) return 'Este caixa não está aberto neste terminal. Volte e confira a sessão.'
+  if (!command.authorized) return 'Este operador não tem permissão para fechar o caixa no cenário atual.'
+  if (cashMethods.some((method) => !Number.isSafeInteger(command.counted[method]) || command.counted[method] < 0 || command.counted[method] > 999999999)) return 'Informe a contagem de cada meio, inclusive zero, com até duas casas decimais e sem separador de milhar.'
+  if (session.movements.map((movement) => movement.id).join('|') !== command.movementIds.join('|')) return 'Os movimentos mudaram durante a conferência. Volte e abra o fechamento novamente para conferir os valores atuais.'
+  const expected = summarizeCash(session).byMethod
+  if (command.reason.trim().length > 300 || (cashMethods.some((method) => command.counted[method] !== expected[method]) && !command.reason.trim())) return 'Informe o motivo das diferenças, com até 300 caracteres.'
+  if (!command.id.trim() || !Number.isFinite(Date.parse(command.at)) || Date.parse(command.at) < Date.parse(session.openedAt)) return 'Dados de fechamento inválidos. Volte e abra o formulário novamente.'
+}
+export function closeDemoSession(sessions: CashSession[], command: CloseCashCommand): CashSession[] {
+  if (validateCashClosing(sessions, command) || sessions.some((session) => session.closing?.id === command.id)) return sessions
+  return sessions.map((session) => session.number !== command.sessionNumber ? session : {
+    ...session, closedAt: command.at, countedCashCents: command.counted.Dinheiro, sync: 'Pendente',
+    closing: { id: command.id, operator: demoOperator, expected: { ...summarizeCash(session).byMethod }, counted: { ...command.counted }, reason: command.reason.trim() },
+  })
 }
 export function registerCashSale(sessions: CashSession[], sale: Sale): CashSession[] {
   return sessions.map((session) => session.number !== sale.cashSession || session.closedAt || session.movements.some((movement) => movement.id === 'sale-' + sale.id) ? session : { ...session, sync: 'Pendente', movements: [...session.movements, saleMovement(sale)] })
