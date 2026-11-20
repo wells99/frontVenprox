@@ -2,7 +2,8 @@ import { AppIcon } from '../../ui/AppIcon'
 import { useEffect, useRef, useState } from 'react'
 import { money, normalize } from './demoSales'
 import type { Sale } from './demoSales'
-import { catalog, parseMoney, subtotalOf, validateDraft } from './saleDraft'
+import { parseMoney, subtotalOf, validateDraft } from './saleDraft'
+import type { CatalogProduct } from '../products/productDemo'
 import type { DraftItem, Product } from './saleDraft'
 import { PaymentDialog } from './PaymentDialog'
 import type { DemoPayment } from './PaymentDialog'
@@ -11,7 +12,7 @@ import { SaleConfirmation } from './SaleConfirmation'
 import type { CashSession } from '../cash/cashDemo'
 import './checkout.css'
 
-export function NewSale({ active, route, sales, nextNumber, onComplete, onSync, onPrint, cashSession, opening, onOpenCash }: { cashSession?: CashSession; opening: boolean; onOpenCash: () => void; active: boolean; route: string; sales: Sale[]; nextNumber: number; onComplete: (sale: Sale) => void; onSync: (id: string, sync: Sale['sync']) => void; onPrint: (id: string) => void }) {
+export function NewSale({ products, active, route, sales, nextNumber, onComplete, onSync, onPrint, cashSession, opening, onOpenCash }: { products: CatalogProduct[]; cashSession?: CashSession; opening: boolean; onOpenCash: () => void; active: boolean; route: string; sales: Sale[]; nextNumber: number; onComplete: (sale: Sale) => void; onSync: (id: string, sync: Sale['sync']) => void; onPrint: (id: string) => void }) {
   const [items, setItems] = useState<DraftItem[]>([])
   const [query, setQuery] = useState('')
   const [quantity, setQuantity] = useState('1')
@@ -36,12 +37,12 @@ export function NewSale({ active, route, sales, nextNumber, onComplete, onSync, 
   const paymentOpen = active && route === '/vendas/nova/pagamento'
   const confirmationOpen = active && (route === '/vendas/nova/confirmacao' || route.startsWith('/vendas/nova/confirmacao/'))
   const confirmedSale = confirmationOpen ? sales.find((sale) => sale.id === route.slice('/vendas/nova/confirmacao/'.length) && sale.id.startsWith('demo-new-')) : undefined
-  const results = catalog.filter((product) => normalize(product.name + ' ' + product.code).includes(normalize(query.trim())))
+  const results = products.filter((product) => product.active && normalize([product.name, product.code, product.barcode].join(' ')).includes(normalize(query.trim())))
   const highlighted = Math.min(resultIndex, Math.max(0, results.length - 1))
   const subtotal = subtotalOf(items)
   const discountCents = parseMoney(discount) ?? 0
   const total = Math.max(0, subtotal - discountCents)
-  const validation = items.length ? validateDraft(items, discount, requireStock) : undefined
+  const validation = items.length ? validateDraft(items, discount, requireStock, products) : undefined
 
   useEffect(() => { if (active && !paymentOpen && !confirmationOpen && !dialog && !opening) searchRef.current?.focus() }, [active, paymentOpen, confirmationOpen, dialog, opening])
 
@@ -56,7 +57,7 @@ export function NewSale({ active, route, sales, nextNumber, onComplete, onSync, 
     setQuery(''); setQuantity('1'); setResultIndex(0); setError(''); searchRef.current?.focus()
   }
   function startPayment() {
-    const problem = validateDraft(items, discount, requireStock)
+    const problem = validateDraft(items, discount, requireStock, products)
     if (problem) { setError(problem); return }
     if (!cashOpen) { onOpenCash(); return }
     setError(''); window.location.hash = '/vendas/nova/pagamento'

@@ -1,0 +1,11 @@
+.stock-tabs { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 0 20px; }
+.stock-tabs [aria-pressed=true] { border-color: var(--color-selected-border); background: var(--color-selected); color: var(--color-accent); }
+.stock-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.stock-table td:nth-child(3) { font-weight: 600; }
+.stock-table { min-width: 620px; }
+.stock-history { min-width: 780px; }
+.stock-history small { max-width: 250px; white-space: normal; overflow-wrap: anywhere; line-height: 1.5; }
+.stock-preview { display: flex; flex-wrap: wrap; gap: 24px; padding: 16px; background: var(--color-selected); border-radius: 5px; margin: 20px 0; }
+.stock-preview div { flex: 1; min-width: 90px; }
+.stock-preview dt { font-size: 11px; color: var(--color-text-muted); margin-bottom: 8px; }
+.stock-preview dd { margin: 0; font-weight: 600; font-size: 18px; }

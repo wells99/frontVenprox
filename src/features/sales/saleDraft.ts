@@ -19,7 +19,7 @@ export function parseMoney(value: string): number | undefined {
 }
 export const moneyInput = (cents: number) => (cents / 100).toFixed(2).replace('.', ',')
 export const subtotalOf = (items: DraftItem[]) => items.reduce((sum, item) => sum + item.quantity * item.priceCents, 0)
-export function validateDraft(items: DraftItem[], discount: string, requireStock: boolean): string | undefined {
+export function validateDraft(items: DraftItem[], discount: string, requireStock: boolean, products: Product[] = catalog): string | undefined {
   if (!items.length) return 'Adicione pelo menos um item à venda.'
   if (items.some((item) => !Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 999)) return 'Use quantidades inteiras entre 1 e 999.'
   const discountCents = parseMoney(discount)
@@ -27,7 +27,7 @@ export function validateDraft(items: DraftItem[], discount: string, requireStock
   if (discountCents >= subtotalOf(items)) return 'O desconto deve ser menor que o subtotal da venda.'
   if (requireStock) {
     if (items.some((item) => !item.productId)) return 'O modo de estoque obrigatório não permite itens avulsos. Remova-os ou volte ao modo permissivo.'
-    for (const product of catalog) {
+    for (const product of products) {
       const quantity = items.filter((item) => item.productId === product.id).reduce((sum, item) => sum + item.quantity, 0)
       if (quantity > Math.max(0, product.stock)) return 'Estoque insuficiente para ' + product.name + '. Disponível: ' + Math.max(0, product.stock) + '.'
     }

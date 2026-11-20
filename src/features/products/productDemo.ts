@@ -1,10 +1,10 @@
 import { catalog } from '../sales/saleDraft'
 import type { Product } from '../sales/saleDraft'
 
-export type CatalogProduct = Product & { barcode?: string; category?: string; costCents?: number; unit: string; active: boolean }
+export type CatalogProduct = Product & { version?: number; barcode?: string; category?: string; costCents?: number; unit: string; active: boolean }
 
 // Preço e saldo dos produtos já vendidos vêm da mesma base da T02.
-// Cadastro/edição e persistência serão conectados nas etapas seguintes.
+// Cadastro, categorias e movimentos são compartilhados em App; sem persistência.
 const details: Record<string, { barcode?: string; category?: string; costCents?: number }> = {
   water: { barcode: '7891000000011', category: 'Bebidas', costCents: 120 },
   coffee: { category: 'Bebidas', costCents: 100 },

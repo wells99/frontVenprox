@@ -1,6 +1,6 @@
 # Venprox — ordem de construção do frontend
 
-**Total inicial: 25 unidades de interface — 1 estrutura, 11 páginas, 12 modais/painéis e 1 assistente opcional.** Não são 25 páginas na barra lateral: existem **8 destinos principais**. T00 a T10 estão implementadas; o fluxo usa dados fictícios em memória. As demais continuam planejadas.
+**Total inicial: 25 unidades de interface — 1 estrutura, 11 páginas, 12 modais/painéis e 1 assistente opcional.** Não são 25 páginas na barra lateral: existem **8 destinos principais**. T00 a T14 estão implementadas; o fluxo usa dados fictícios em memória. As demais continuam planejadas.
 
 ## Como se conectam
 
@@ -32,10 +32,10 @@ A ordem abaixo é de construção visual, não a ordem obrigatória de uso da lo
 | 08 | T08 — Suprimento e sangria | modal | [08-movimento-caixa.md](telas/08-movimento-caixa.md) | FEITO - 20/11/2026 (simulação) |
 | 09 | T09 — Conferência e fechamento | modal | [09-fechamento-caixa.md](telas/09-fechamento-caixa.md) | FEITO - 20/11/2026 (simulação) |
 | 10 | T10 — Lista de produtos | página | [10-produtos.md](telas/10-produtos.md) | FEITO - 20/11/2026 (simulação) |
-| 11 | T11 — Cadastro e edição de produto | modal | [11-produto-editor.md](telas/11-produto-editor.md) | Planejada |
-| 12 | T12 — Gerenciamento de categorias | painel | [12-categorias.md](telas/12-categorias.md) | Planejada |
-| 13 | T13 — Saldo e movimentos de estoque | página | [13-estoque.md](telas/13-estoque.md) | Planejada |
-| 14 | T14 — Entrada e ajuste de estoque | modal | [14-movimento-estoque.md](telas/14-movimento-estoque.md) | Planejada |
+| 11 | T11 — Cadastro e edição de produto | modal | [11-produto-editor.md](telas/11-produto-editor.md) | FEITO - 20/11/2026 (simulação) |
+| 12 | T12 — Gerenciamento de categorias | painel | [12-categorias.md](telas/12-categorias.md) | FEITO - 20/11/2026 (simulação) |
+| 13 | T13 — Saldo e movimentos de estoque | página | [13-estoque.md](telas/13-estoque.md) | FEITO - 20/11/2026 (simulação) |
+| 14 | T14 — Entrada e ajuste de estoque | modal | [14-movimento-estoque.md](telas/14-movimento-estoque.md) | FEITO - 20/11/2026 (simulação) |
 | 15 | T15 — Lista de clientes | página | [15-clientes.md](telas/15-clientes.md) | Planejada |
 | 16 | T16 — Cadastro mínimo de cliente | modal | [16-cliente-editor.md](telas/16-cliente-editor.md) | Planejada |
 | 17 | T17 — Fiado manual do cliente | página | [17-fiado.md](telas/17-fiado.md) | Planejada |
@@ -49,9 +49,9 @@ A ordem abaixo é de construção visual, não a ordem obrigatória de uso da lo
 
 ## Entrega atual e próximo passo
 
-T00: React + TypeScript + Vite, ícones próprios, barra lateral clara, links por hash com seleção ativa e recolhimento. T01 contém o histórico; T02 permite montar rascunho; T03 confere pagamentos/troco e inclui uma venda simulada no Histórico; T04 mostra confirmação, número/valor, nova venda vazia e retorno ao Histórico, com cenários de impressão/reimpressão e envio. T05 abre o detalhe completo, cancelamento com motivo/permissão simulada e prévia do comprovante não fiscal, preservando o contexto do Histórico. Dados apenas em memória, identificados como fictícios. T06 abre uma sessão simulada com valor inicial explícito; T07 mostra caixa atual/anteriores e movimentos, separando dinheiro, digitais e fiado. T08 registra suprimentos e sangrias simulados com valor, motivo, prévia do saldo e proteção contra repetição. T09 confere dinheiro e digitais separadamente, exige motivo de diferenças e encerra a sessão em memória, retornando à consulta do caixa fechado. T10 mostra lista de produtos com busca por nome/código/barcode, categorias, situação, ordenação, paginação e seleção por teclado, incluindo custo não informado e saldo negativo. As outras cinco áreas continuam com centro vazio. Não há persistência, caixa/cobrança ou integração real.
+T00–T14 implementadas com React + TypeScript + Vite, paleta e ícones compartilhados. Vendas T01–T05 e Caixa T06–T09 mantêm seus fluxos simulados. T10 consulta o catálogo; T11 cadastra/edita produtos com validação por campo e cenários de erro/conflito; T12 cria, renomeia, inativa e reativa categorias, preservando vínculos e rascunho. T13 consulta saldos e movimentos; T14 registra entradas e ajustes absolutos com motivo, prévia auditável, permissão simulada e proteção contra repetição. Produtos e Estoque compartilham o mesmo estado em memória; novas vendas consultam o catálogo atualizado e preservam preços dos itens já adicionados ao rascunho. As outras quatro áreas continuam com centro vazio.
 
-**Próxima tela: T11, Cadastro e edição de produto.** T06/T07 estão conectadas: a demonstração inicia sem sessão aberta; Nova Venda passa pela abertura e retoma a montagem, ou o caixa pode ser aberto pela própria página Caixa. Vendas e cancelamentos da sessão atual atualizam o livro em memória; sessões encerradas preservam seus valores. T08 movimenta apenas o dinheiro da sessão aberta em memória; T09 confere os meios e encerra a sessão na simulação, preservando valores e motivo nas consultas; nova venda exige outra abertura. T10 permite consultar produtos; cadastro/edição e gestão de categorias estão explicitamente indisponíveis até T11/T12. Seguir por unidade preservando a estrutura comum.
+**Próxima tela: T15, Lista de clientes.** T11–T14 foram implementadas e verificadas sequencialmente conforme autorização do responsável. Não há persistência ou integração real. Recarregar restaura a demonstração. O estoque registra entradas/ajustes manuais; movimentação automática por venda/cancelamento permanece para integração futura. Não há custo médio, fotos, lotes ou validade. Build/lint e 14 testes aprovados; cadastro, categorias, consulta, entrada/ajuste e teclado conferidos no navegador. Escala física do Windows e equipamento da loja ainda precisam de validação presencial.
 
 ## Ciclo de trabalho para cada tela
 
@@ -68,7 +68,7 @@ T00: React + TypeScript + Vite, ícones próprios, barra lateral clara, links po
 - **Caixa compartilhado:** sessão de demonstração em `App.tsx`, com regras/cálculos em `src/features/cash/cashDemo.ts`. Não voltar ao número fixo #26 ou à opção local de “Caixa aberto” na T02. Abertura é explícita; movimentos manuais usam os comandos validados da T08; fechamento usa a conferência validada da T09; sessões encerradas não são recontadas por cancelamentos posteriores. Verificação do modelo: `npm.cmd test`.
 - **Pagamento por teclado:** na T03, ↑/↓ selecionam o meio e transferem o total quando o pagamento está concentrado em um único meio. Se já houver divisão, preservam os valores e movem o foco; Tab permite edição livre. Não ampliar esse atalho para fora do modal nem remover o bloqueio de confirmação duplicada.
 
-Atualização de 20/11/2026: paleta e ícones unificados nas telas existentes; navegação de T03/T04 validada no navegador. T05 entregue com detalhe, cancelamento protegido contra repetição, comprovante não fiscal e impressão simulada; fluxo T02–T05 e contexto do Histórico validados no navegador. T06/T07 entregues com abertura explícita, consulta de sessões e movimentos simulados; T08 entregue com suprimento/sangria, cenários de erro/permissão simulada, retorno de foco e atualização do livro em memória; T09 entregue com conferência por meio, motivo de diferença, fechamento simulado e consulta da sessão encerrada. T10 entregue com lista filtrável de produtos e estados de consulta simulados, preservando contexto ao trocar de área. T11/T12 e integrações reais continuam planejadas.
+Atualização de 20/11/2026: paleta e ícones unificados nas telas existentes; navegação de T03/T04 validada no navegador. T05 entregue com detalhe, cancelamento protegido contra repetição, comprovante não fiscal e impressão simulada; fluxo T02–T05 e contexto do Histórico validados no navegador. T06/T07 entregues com abertura explícita, consulta de sessões e movimentos simulados; T08 entregue com suprimento/sangria, cenários de erro/permissão simulada, retorno de foco e atualização do livro em memória; T09 entregue com conferência por meio, motivo de diferença, fechamento simulado e consulta da sessão encerrada. T10 entregue com lista filtrável de produtos e estados de consulta simulados, preservando contexto ao trocar de área. T11–T14 entregues em 20/11/2026 com cadastro, categorias, consulta de estoque e movimentos manuais simulados. Integrações reais continuam planejadas.
 
 ## Defaults e limites que devem acompanhar as telas
 

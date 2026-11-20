@@ -3,7 +3,7 @@ import test from 'node:test'
 import { createServer } from 'vite'
 
 // O loader do projeto resolve os mesmos módulos TypeScript usados pela interface.
-const server = await createServer({ server: { middlewareMode: true }, appType: 'custom' })
+const server = await createServer({ server: { middlewareMode: true, hmr: false, ws: false }, appType: 'custom' })
 let cash
 let fixtures
 try {

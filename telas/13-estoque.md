@@ -1,6 +1,8 @@
+FEITO - 20/11/2026 (simulação)
+
 # T13 — Saldo e movimentos de estoque
 
-**Tipo:** página. **Estado:** especificada, não implementada. **Ordem:** 13. **Data:** 20/11/2026.
+**Tipo:** página. **Estado:** implementada em memória. **Ordem:** 13. **Data:** 20/11/2026.
 
 [Voltar ao roteiro](../PLANO-DE-TELAS.md) · [Guia geral](../../docs/frontend.md)
 
@@ -26,3 +28,7 @@ Validar teclado, foco visível, vazio, erro e carregamento sem perder contexto. 
 
 Implementar esta unidade isoladamente quando chegar sua vez, montando-a na estrutura T00. Não criar as outras telas por antecipação. Nesta fase de frontend, usar apenas dados fictícios identificados quando necessários; persistência, permissões efetivas, impressão, sincronização e Google dependem de adaptadores futuros. Prototipar ação não comprova operação real.
 
+
+## Entrega e validação
+
+Página com catálogo compartilhado, busca por nome/código/barcode, unidade, saldo, custo conhecido/desconhecido e paginação. Consulta de movimentos por produto ou geral na própria página. Estados vazio, carregamento e falha simulados. Navegador validou busca, saldo negativo sem alerta e histórico vazio. Build e lint aprovados. Saldos iniciais são fictícios e não possuem lançamentos históricos inventados.
