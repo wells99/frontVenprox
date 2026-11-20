@@ -1,0 +1,46 @@
+/* Única paleta global. Telas consomem tokens sem definir cores literais. */
+:root {
+  --color-accent: #008ac7;
+  --color-accent-hover: #0075ae;
+  --color-focus: #0096d6;
+  --color-text: #344953;
+  --color-heading: #1a2e39;
+  --color-text-secondary: #617781;
+  --color-text-muted: #687d88;
+  --color-text-disabled: #9ba5ab;
+  --color-icon-muted: #9aafb9;
+  --color-payment-cash: #668b6b;
+  --color-payment-card: #9a924b;
+  --color-payment-pix: #9877a1;
+  --color-border: #dce3e7;
+  --color-border-soft: #edf0f2;
+  --color-surface-muted: #f5f8fa;
+  --color-surface-subtle: #fbfcfd;
+  --color-surface-disabled: #eef1f3;
+  --color-sidebar: #f2f3f3;
+  --color-sidebar-selected: #e4e9eb;
+  --color-sidebar-hover: #e9eded;
+  --color-skeleton: #e9eff2;
+  --color-selected: #eaf7fd;
+  --color-selected-border: #c8e7f5;
+  --color-disabled: #c2cdd3;
+  --color-danger: #a34f39;
+  --color-danger-bg: #fff6ee;
+  --color-danger-border: #f4e5d8;
+  --color-warning: #916d21;
+  --color-warning-bg: #fff5d9;
+  --color-success: #336856;
+  --color-success-bg: #edf8f3;
+  --color-success-border: #d4e9df;
+  --color-dialog-shadow: #172f4833;
+  --color-backdrop: #152c3944;
+  --color-surface: #fff;
+  --color-on-accent-divider: #ffffff55;
+  --color-on-accent: #fff;
+}
+
+.app-icon { display: inline-block; vertical-align: middle; flex-shrink: 0; }
+.payment-icon--cash { color: var(--color-payment-cash); }
+.payment-icon--card { color: var(--color-payment-card); }
+.payment-icon--pix { color: var(--color-payment-pix); }
+.payment-icon--mixed { color: var(--color-accent); }

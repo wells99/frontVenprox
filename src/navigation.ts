@@ -1,3 +1,5 @@
+import type { IconName } from './ui/AppIcon'
+
 export const navigation = [
   { id: 'vendas', label: 'Vendas', icon: 'sales' },
   { id: 'clientes', label: 'Clientes', icon: 'customers' },
@@ -7,6 +9,6 @@ export const navigation = [
   { id: 'caixa', label: 'Caixa', icon: 'cash' },
   { id: 'relatorios', label: 'Relatórios', icon: 'reports' },
   { id: 'configuracoes', label: 'Configurações', icon: 'settings' },
-] as const
+] as const satisfies readonly { id: string; label: string; icon: IconName }[]
 export type SectionId = (typeof navigation)[number]['id']
-export type NavigationIconName = (typeof navigation)[number]['icon'] | 'menu'
+

@@ -1,24 +1,24 @@
 .app-shell { --sidebar-width: 176px; display: grid; grid-template-columns: var(--sidebar-width) minmax(0, 1fr); min-height: 100dvh; }
 .app-shell--collapsed { --sidebar-width: 64px; }
-.sidebar { position: sticky; top: 0; height: 100dvh; display: flex; flex-direction: column; background: #f2f3f3; border-right: 1px solid #d9dddd; }
-.sidebar-header { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 0 14px; border-bottom: 1px solid #d9dddd; }
-.menu-toggle { display: grid; place-items: center; flex-shrink: 0; width: 34px; height: 34px; padding: 0; color: #657071; border: 0; border-radius: 4px; background: transparent; cursor: pointer; }
-.menu-toggle:hover { background: #e3e7e7; }
-.wordmark { font-size: 17px; font-weight: 650; letter-spacing: -.5px; color: #303b40; }
+.sidebar { position: sticky; top: 0; height: 100dvh; display: flex; flex-direction: column; background: var(--color-sidebar); border-right: 1px solid var(--color-border); }
+.sidebar-header { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 0 14px; border-bottom: 1px solid var(--color-border); }
+.menu-toggle { display: grid; place-items: center; flex-shrink: 0; width: 34px; height: 34px; padding: 0; color: var(--color-text-secondary); border: 0; border-radius: 4px; background: transparent; cursor: pointer; }
+.menu-toggle:hover { background: var(--color-sidebar-hover); }
+.wordmark { font-size: 17px; font-weight: 650; letter-spacing: -.5px; color: var(--color-text); }
 .navigation { display: flex; flex: 1; min-height: 0; overflow-y: auto; flex-direction: column; padding-top: 8px; }
-.navigation-link { display: flex; align-items: center; flex-shrink: 0; gap: 16px; min-height: 48px; padding: 8px 18px; border-left: 3px solid transparent; color: #394347; text-decoration: none; font-size: 13px; line-height: 1.35; }
-.navigation-link:hover { background: #e9eded; }
-.navigation-link.is-active { border-left-color: #009ce0; background: #e4e9eb; color: #182b35; font-weight: 600; }
+.navigation-link { display: flex; align-items: center; flex-shrink: 0; gap: 16px; min-height: 48px; padding: 8px 18px; border-left: 3px solid transparent; color: var(--color-text); text-decoration: none; font-size: 13px; line-height: 1.35; }
+.navigation-link:hover { background: var(--color-sidebar-hover); }
+.navigation-link.is-active { border-left-color: var(--color-accent); background: var(--color-sidebar-selected); color: var(--color-heading); font-weight: 600; }
 .navigation-link svg { flex-shrink: 0; }
-.navigation-link--settings { margin-top: auto; border-top: 1px solid #d9dddd; }
-.sidebar-footer { display: flex; align-items: center; gap: 12px; flex-shrink: 0; padding: 13px 18px; border-top: 1px solid #d9dddd; }
-.brand-symbol { display: grid; place-items: center; width: 26px; height: 26px; flex-shrink: 0; background: #009ce0; color: white; border-radius: 6px; font-size: 16px; font-weight: 750; }
-.brand-caption { color: #737d81; font-size: 12px; }
-.workspace { min-width: 0; min-height: 100dvh; background: #fff; outline: none; }
+.navigation-link--settings { margin-top: auto; border-top: 1px solid var(--color-border); }
+.sidebar-footer { display: flex; align-items: center; gap: 12px; flex-shrink: 0; padding: 13px 18px; border-top: 1px solid var(--color-border); }
+.brand-symbol { display: grid; place-items: center; width: 26px; height: 26px; flex-shrink: 0; background: var(--color-accent); color: var(--color-on-accent); border-radius: 6px; font-size: 16px; font-weight: 750; }
+.brand-caption { color: var(--color-text-muted); font-size: 12px; }
+.workspace { min-width: 0; min-height: 100dvh; background: var(--color-surface); outline: none; }
 .app-shell--collapsed .navigation-link { justify-content: center; padding-inline: 0; }
 .app-shell--collapsed .sidebar-header { padding-inline: 14px; }
 .app-shell--collapsed .sidebar-footer { justify-content: center; padding-inline: 0; }
 .app-shell--collapsed .wordmark, .app-shell--collapsed .navigation-label, .app-shell--collapsed .brand-caption { display: none; }
-.skip-link { position: fixed; z-index: 10; left: 72px; top: 10px; transform: translateY(-180%); background: #006d9f; color: white; padding: 10px 16px; border-radius: 4px; }
+.skip-link { position: fixed; z-index: 10; left: 72px; top: 10px; transform: translateY(-180%); background: var(--color-accent-hover); color: var(--color-on-accent); padding: 10px 16px; border-radius: 4px; }
 .skip-link:focus { transform: translateY(0); }
 @media (max-width: 480px) { .app-shell:not(.app-shell--collapsed) { --sidebar-width: 164px; } .navigation-link { gap: 12px; padding-inline: 14px; } }

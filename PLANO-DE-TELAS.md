@@ -1,6 +1,6 @@
 # Venprox — ordem de construção do frontend
 
-**Total inicial: 25 unidades de interface — 1 estrutura, 11 páginas, 12 modais/painéis e 1 assistente opcional.** Não são 25 páginas na barra lateral: existem **8 destinos principais**. T00 e T01 estão implementadas; T01 permite simulação com dados fictícios. As demais continuam especificadas para construir uma por vez.
+**Total inicial: 25 unidades de interface — 1 estrutura, 11 páginas, 12 modais/painéis e 1 assistente opcional.** Não são 25 páginas na barra lateral: existem **8 destinos principais**. T00, T01, T02 e T03 estão implementadas; o fluxo usa dados fictícios em memória. As demais continuam planejadas.
 
 ## Como se conectam
 
@@ -23,8 +23,8 @@ A ordem abaixo é de construção visual, não a ordem obrigatória de uso da lo
 | --- | --- | --- | --- | --- |
 | 00 | T00 — Estrutura e navegação | estrutura | [00-estrutura.md](telas/00-estrutura.md) | Base pronta |
 | 01 | T01 — Histórico de vendas | página | [01-vendas.md](telas/01-vendas.md) | FEITO - 20/11/2026 (simulação) |
-| 02 | T02 — Montagem da venda | página | [02-nova-venda.md](telas/02-nova-venda.md) | Planejada |
-| 03 | T03 — Conferência de pagamento | modal | [03-pagamento.md](telas/03-pagamento.md) | Planejada |
+| 02 | T02 — Montagem da venda | página | [02-nova-venda.md](telas/02-nova-venda.md) | FEITO - 20/11/2026 (simulação) |
+| 03 | T03 — Conferência de pagamento | modal | [03-pagamento.md](telas/03-pagamento.md) | FEITO - 20/11/2026 (simulação) |
 | 04 | T04 — Confirmação da venda | modal | [04-confirmacao-venda.md](telas/04-confirmacao-venda.md) | Planejada |
 | 05 | T05 — Detalhe, cancelamento e comprovante | painel | [05-detalhe-venda.md](telas/05-detalhe-venda.md) | Planejada |
 | 06 | T06 — Abertura de caixa | modal | [06-abertura-caixa.md](telas/06-abertura-caixa.md) | Planejada |
@@ -49,9 +49,9 @@ A ordem abaixo é de construção visual, não a ordem obrigatória de uso da lo
 
 ## Entrega atual e próximo passo
 
-T00: React + TypeScript + Vite, ícones próprios, barra lateral clara, links por hash com seleção ativa e recolhimento. T01 ocupa o centro de Vendas com histórico, filtros, ordenação, paginação, seleção e prévias, usando dados explicitamente fictícios. As outras sete áreas continuam com centro vazio. Não há persistência, criação de venda ou integração real.
+T00: React + TypeScript + Vite, ícones próprios, barra lateral clara, links por hash com seleção ativa e recolhimento. T01 contém histórico e prévias; T02 permite montar rascunho; T03 confere pagamentos/troco e inclui uma venda simulada no Histórico. Dados apenas em memória, identificados como fictícios. As outras sete áreas continuam com centro vazio. Não há persistência, caixa/cobrança ou integração real.
 
-**Próxima tela: T02, Montagem da Venda**, seguindo seu arquivo e substituindo seu ponto de entrada reservado por uma tela simulável. T05 permanece planejada: a prévia de consulta em T01 não entrega cancelamento/comprovante/detalhe completo. Seguir uma unidade por vez, separando componentes e preservando a estrutura comum.
+**Próxima tela: T04, Confirmação da Venda.** T01 → T02 → T03 já permite montar e concluir uma venda simulada, retornando provisoriamente ao Histórico com mensagem e um novo registro em memória. T05 continua planejada, com apenas prévia informativa; T06 não foi antecipada, usando cenário explícito de caixa aberto/fechado para exercitar T02/T03. Seguir por unidade preservando a estrutura comum.
 
 ## Ciclo de trabalho para cada tela
 
@@ -60,6 +60,14 @@ T00: React + TypeScript + Vite, ícones próprios, barra lateral clara, links po
 3. Validar resolução, foco/teclado e fluxo com a tela anterior. Não deixar botão sem ação aparentar recurso funcional.
 4. Revisar com o responsável antes de ampliar o fluxo; manter o escopo de uma unidade por incremento.
 5. Após implementar e validar navegação/simulação, colocar `FEITO - DATA ATUAL` na primeira linha do Markdown da unidade e atualizar este quadro; registrar comportamentos simulados e limitações para outra IA continuar.
+
+## Padrões compartilhados para as próximas telas
+
+- **Cores:** [src/theme.css](src/theme.css) é a paleta global, importada por `src/index.css`. Usar variáveis semânticas como `var(--color-accent)` e `var(--color-text)` nos estilos. Alterar a variável atualiza seus usos; criar novos tons nesse arquivo, sem repetir cores literais nas telas.
+- **Ícones:** [src/ui/AppIcon.tsx](src/ui/AppIcon.tsx) contém o catálogo SVG e o mapa de pagamentos. Usar `AppIcon` para ações/navegação e `PaymentIcon` para meios de pagamento. Trocar o desenho no catálogo atualiza todas as ocorrências desse ícone; trocar o mapa de pagamento atualiza Histórico e conferência. Novas telas devem importar esses componentes, sem copiar SVG ou usar caracteres como ícones. Símbolos textuais de quantidade/moeda continuam sendo texto.
+- **Pagamento por teclado:** na T03, ↑/↓ selecionam o meio e transferem o total quando o pagamento está concentrado em um único meio. Se já houver divisão, preservam os valores e movem o foco; Tab permite edição livre. Não ampliar esse atalho para fora do modal nem remover o bloqueio de confirmação duplicada.
+
+Atualização de 20/11/2026: paleta e ícones unificados nas telas existentes; navegação da T03 validada no navegador. T04 continua planejada.
 
 ## Defaults e limites que devem acompanhar as telas
 

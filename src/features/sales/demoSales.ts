@@ -5,7 +5,10 @@ export type Sale = {
   date: string
   time: string
   items: { name: string; quantity: number; priceCents: number }[]
-  payment: PaymentMethod
+  payment: PaymentMethod | 'Misto'
+  discountCents?: number
+  payments?: { method: PaymentMethod; appliedCents: number; tenderedCents: number; changeCents: number }[]
+  notes?: string
   customer: string
   operator: string
   cashSession: number
@@ -36,7 +39,7 @@ export const demoSales: Sale[] = Array.from({ length: 24 }, (_, index) => ({
   status: index === 7 || index === 20 ? 'Cancelada' : 'Concluída',
   sync: index < 3 ? 'Pendente' : 'Recebida',
 }))
-export const totalCents = (sale: Sale) => sale.items.reduce((sum, item) => sum + item.priceCents * item.quantity, 0)
+export const totalCents = (sale: Sale) => sale.items.reduce((sum, item) => sum + item.priceCents * item.quantity, 0) - (sale.discountCents ?? 0)
 export const money = (cents: number) => (cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 export const dateLabel = (value: string) => value.split('-').reverse().join('/')
 export const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
