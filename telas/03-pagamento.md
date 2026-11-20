@@ -16,7 +16,7 @@ Total destacado, dinheiro/crédito/débito/Pix manuais, dinheiro recebido/troco 
 
 ## Interações e retorno
 
-Voltar/Escape → T02 preservando itens, cliente, desconto e observação; valores de pagamento são reiniciados ao reabrir a conferência. Confirmar → estado de conclusão simulada; sucesso adiciona um único registro no Histórico e retorna a T01. Esse retorno é provisório até implementar T04; o adaptador real e o commit local ainda não existem.
+Voltar/Escape → T02 preservando itens, cliente, desconto e observação; valores de pagamento são reiniciados ao reabrir a conferência. Confirmar → estado de conclusão simulada; sucesso adiciona um único registro no Histórico e abre T04. A confirmação permite iniciar outra venda ou retornar a T01; o adaptador real e o commit local ainda não existem.
 
 ## Regras e aceite visual
 
@@ -44,7 +44,7 @@ Implementação em `src/features/sales/PaymentDialog.tsx`, com `DemoDialog.tsx`,
 
 Em 20/11/2026: build/lint aprovados e fluxo Edge validou os quatro meios individuais, pagamento misto, troco, valor insuficiente, excesso digital, completar restante, voltar mantendo rascunho, falha/retentativa e confirmação única. F2 de abertura/repetido não conclui automaticamente. Registro final conferido no Histórico/prévia com desconto, meios, troco e observação. Conferidas larguras 1366, 1920 e 375 px sem rolagem horizontal do diálogo e sem erros de página.
 
-“Concluir simulação” altera somente memória do frontend; não comprova gravação, recebimento, saldo de caixa/estoque ou sincronização reais. T04 (confirmação visual completa) é a próxima unidade, ainda não marcada como feita.
+“Concluir simulação” altera somente memória do frontend; não comprova gravação, recebimento, saldo de caixa/estoque ou sincronização reais. T04 foi conectada em 20/11/2026; ver [confirmação da venda](04-confirmacao-venda.md) para navegação e cenários após a conclusão.
 
 ### Ajuste de teclado e componentes compartilhados — 20/11/2026
 

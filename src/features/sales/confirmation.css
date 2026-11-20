@@ -1,0 +1,24 @@
+.confirmation-dialog { width: min(520px, calc(100% - 24px)); max-height: calc(100dvh - 28px); overflow-y: auto; }
+.confirmation-body { padding: 22px 26px 18px; }
+.confirmation-success { display: grid; place-items: center; width: 64px; height: 64px; margin: 0 auto 16px; border-radius: 50%; color: var(--color-success); background: var(--color-success-bg); border: 1px solid var(--color-success-border); }
+.confirmation-amount { display: grid; gap: 6px; text-align: center; font-size: 12px; color: var(--color-text-secondary); }
+.confirmation-amount strong { font-size: 36px; letter-spacing: -1px; color: var(--color-heading); font-weight: 650; }
+.confirmation-reference { text-align: center; font-size: 12px; color: var(--color-text-muted); margin: 10px 0 20px; }
+.confirmation-reference strong { color: var(--color-text); }
+.confirmation-payment { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 13px 0; border-block: 1px solid var(--color-border-soft); font-size: 13px; }
+.confirmation-payment > span:first-child { display: inline-flex; align-items: center; gap: 8px; }
+.confirmation-payment strong { margin-left: 5px; color: var(--color-success); font-weight: 600; }
+.confirmation-sync { margin-top: 16px; padding: 12px 14px; border-radius: 5px; background: var(--color-surface-muted); font-size: 12px; line-height: 1.5; }
+.confirmation-sync strong { font-weight: 600; }
+.confirmation-sync p { margin: 5px 0 0; color: var(--color-text-secondary); }
+.confirmation-sync.has-error { background: var(--color-danger-bg); color: var(--color-danger); }
+.confirmation-print { margin-top: 18px; text-align: center; }
+.confirmation-print button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.confirmation-print p { color: var(--color-text-muted); font-size: 11px; line-height: 1.5; margin: 8px 0 0; }
+.confirmation-print-result { font-size: 12px; line-height: 1.5; color: var(--color-success); }
+.confirmation-scenarios { margin-top: 18px; }
+.confirmation-scenarios > button { margin-top: 14px; }
+.sales-dialog .confirmation-actions { display: flex; flex-direction: column; align-items: stretch; gap: 12px; }
+.confirmation-actions .sales-primary { border-radius: 6px; min-height: 40px; }
+.confirmation-actions .sales-text-button { padding: 4px; }
+@media (max-width: 580px) { .confirmation-body { padding: 20px 18px 16px; } .confirmation-dialog .sale-dialog-heading { padding: 20px 18px 16px; } .sales-dialog .confirmation-actions { padding: 16px 18px; } .confirmation-amount strong { font-size: 32px; } }

@@ -3,12 +3,13 @@ import { useEffect, useRef, useState } from 'react'
 import type { KeyboardEvent } from 'react'
 import { dateLabel, money, normalize, totalCents } from './demoSales'
 import type { Sale } from './demoSales'
+import { SaleDetail } from './SaleDetail'
 import './sales.css'
 
-type Props = { active: boolean; route: string; sales: Sale[] }
+type Props = { active: boolean; route: string; sales: Sale[]; onCancel: (id: string, reason: string, authorized: boolean) => void; onPrint: (id: string) => void }
 const pageSize = 8
 
-export function SalesHistory({ active, route, sales }: Props) {
+export function SalesHistory({ active, route, sales, onCancel, onPrint }: Props) {
   const [query, setQuery] = useState('')
   const [payment, setPayment] = useState('')
   const [status, setStatus] = useState('')
@@ -18,10 +19,11 @@ export function SalesHistory({ active, route, sales }: Props) {
   const [to, setTo] = useState('')
   const [sort, setSort] = useState('recent')
   const [page, setPage] = useState(1)
-  const [selectedId, setSelectedId] = useState(sales[0].id)
+  const [selectedId, setSelectedId] = useState(sales[0]?.id ?? '')
   const [scenario, setScenario] = useState<'normal' | 'loading' | 'error'>('normal')
   const searchRef = useRef<HTMLInputElement>(null)
-  const dialogRef = useRef<HTMLDialogElement>(null)
+  const returnId = useRef<string | undefined>(undefined)
+  const wasOverlay = useRef(false)
   const openedHere = useRef(false)
   const invalidRange = Boolean(from && to && from > to)
   const hasFilters = Boolean(query || payment || status || sync || session || from || to)
@@ -40,6 +42,7 @@ export function SalesHistory({ active, route, sales }: Props) {
 
   function navigate(destination: string) {
     openedHere.current = true
+    if (destination !== 'nova') { returnId.current = destination; setSelectedId(destination) }
     window.location.hash = '/vendas/' + destination
   }
   function closeOverlay() {
@@ -60,16 +63,23 @@ export function SalesHistory({ active, route, sales }: Props) {
   }
 
   useEffect(() => {
+    if (active) searchRef.current?.focus()
+  }, [active])
+
+  useEffect(() => {
     if (scenario !== 'loading') return
     const timer = window.setTimeout(() => setScenario('normal'), 900)
     return () => window.clearTimeout(timer)
   }, [scenario])
 
   useEffect(() => {
-    const dialog = dialogRef.current
-    if (overlay && dialog && !dialog.open) dialog.showModal()
-    else if (!overlay && dialog?.open) dialog.close()
-  }, [overlay])
+    if (wasOverlay.current && !overlay && active) {
+      const button = document.getElementById('open-' + returnId.current)
+      if (button) button.focus()
+      else searchRef.current?.focus()
+    }
+    wasOverlay.current = overlay
+  }, [overlay, active])
 
   useEffect(() => {
     if (!active || overlay) return
@@ -84,11 +94,11 @@ export function SalesHistory({ active, route, sales }: Props) {
 
   return <section className="sales-page" hidden={!active} aria-labelledby="sales-title">
     <header className="sales-header">
-      <h1 id="sales-title">Vendas</h1>
+      <h1 id="sales-title" tabIndex={-1}>Vendas</h1>
       <span className="demo-label"><span aria-hidden="true" />Demonstração · dados fictícios</span>
     </header>
     <div className="sales-actions">
-      <button className="sales-primary" onClick={() => navigate('nova')}><AppIcon name="add" size={16} /> Nova Venda <kbd>F3</kbd></button>
+      <button id="new-sale-button" className="sales-primary" onClick={() => navigate('nova')}><AppIcon name="add" size={16} /> Nova Venda <kbd>F3</kbd></button>
       <p>Consulte e acompanhe o histórico de vendas.</p>
     </div>
     <div className="sales-tabs"><span aria-current="page">Histórico</span></div>
@@ -97,7 +107,7 @@ export function SalesHistory({ active, route, sales }: Props) {
       <label className="sales-search">Buscar venda
         <span className="search-field"><AppIcon name="search" size={18} /><input ref={searchRef} type="search" placeholder="Número, produto, cliente ou operador" value={query} onChange={(event) => { setQuery(event.target.value); setPage(1) }} /></span>
       </label>
-      <label>Caixa<select aria-label="Caixa" value={session} onChange={(event) => { setSession(event.target.value); setPage(1) }}><option value="">Todos os caixas</option><option value="26">Caixa #26</option><option value="25">Caixa #25</option></select></label>
+      <label>Caixa<select aria-label="Caixa" value={session} onChange={(event) => { setSession(event.target.value); setPage(1) }}><option value="">Todos os caixas</option>{Array.from(new Set(sales.map((sale) => sale.cashSession))).sort((a, b) => b - a).map((number) => <option key={number} value={String(number)}>Caixa #{number}</option>)}</select></label>
       <label>Pagamento<select aria-label="Pagamento" value={payment} onChange={(event) => { setPayment(event.target.value); setPage(1) }}><option value="">Todos os meios</option>{['Dinheiro', 'Pix', 'Crédito', 'Débito', 'Misto'].map((value) => <option key={value}>{value}</option>)}</select></label>
       <label>Situação<select aria-label="Situação" value={status} onChange={(event) => { setStatus(event.target.value); setPage(1) }}><option value="">Todas</option><option>Concluída</option><option>Cancelada</option></select></label>
       <label>Envio<select aria-label="Envio" value={sync} onChange={(event) => { setSync(event.target.value); setPage(1) }}><option value="">Todos</option><option value="Pendente">Pendente (simulado)</option><option value="Recebida">Recebida (simulado)</option></select></label>
@@ -115,7 +125,7 @@ export function SalesHistory({ active, route, sales }: Props) {
     {scenario === 'error' ? <div className="sales-empty" role="alert"><h2>Não foi possível carregar as vendas</h2><p>Falha simulada para testar o retorno à lista. Seus filtros foram mantidos.</p><button className="sales-primary" onClick={() => setScenario('loading')}>Tentar novamente</button></div>
     : scenario === 'loading' ? <div className="sales-skeleton" role="status" aria-label="Carregando vendas">{Array.from({ length: 6 }, (_, index) => <div key={index} />)}</div>
     : !visible.length ? <div className="sales-empty"><AppIcon name="search" size={34} className="empty-symbol" /><h2>Nenhuma venda encontrada</h2><p>{invalidRange ? 'Ajuste o intervalo de datas para consultar o histórico.' : 'Experimente outro termo ou ajuste os filtros da busca.'}</p><button className="sales-secondary" onClick={clearFilters}>Limpar filtros</button></div>
-    : <div className="sales-table-scroll"><table className="sales-table"><caption className="visually-hidden">Histórico fictício de vendas. Use Abrir para consultar uma prévia; setas navegam entre os botões.</caption>
+    : <div className="sales-table-scroll"><table className="sales-table"><caption className="visually-hidden">Histórico fictício de vendas. Use Abrir para consultar o detalhe; setas navegam entre os botões.</caption>
       <thead><tr>{['Ação', 'Número', 'Data / hora', 'Itens', 'Cliente / operador', 'Pagamento', 'Situação', 'Envio', 'Total'].map((heading) => <th key={heading} scope="col">{heading}</th>)}</tr></thead>
       <tbody>{visible.map((sale, index) => <tr key={sale.id} className={selected?.id === sale.id ? 'sale-row is-selected' : 'sale-row'} onClick={() => setSelectedId(sale.id)} onDoubleClick={(event) => { if (!(event.target as HTMLElement).closest('button')) navigate(sale.id) }} onKeyDown={(event) => moveRow(event, index)}>
         <td><button id={'open-' + sale.id} className="sale-open" aria-label={'Abrir venda ' + sale.number} onFocus={() => setSelectedId(sale.id)} onClick={() => navigate(sale.id)}>Abrir {selected?.id === sale.id && <kbd>F2</kbd>}</button></td>
@@ -136,23 +146,6 @@ export function SalesHistory({ active, route, sales }: Props) {
     {scenario === 'normal' && <p className="sales-summary">Total das vendas concluídas no filtro: <strong>{money(completed.reduce((sum, sale) => sum + totalCents(sale), 0))}</strong><span>Canceladas não compõem este total.</span></p>}
     <details className="demo-controls"><summary>Cenários de demonstração</summary><div><p>Dados apenas em memória; os estados de envio também são fictícios.</p><button className="sales-secondary" onClick={() => setScenario('loading')}>Simular carregamento</button><button className="sales-secondary" onClick={() => setScenario('error')}>Simular falha</button></div></details>
 
-    <dialog ref={dialogRef} className="sales-dialog" aria-labelledby="sale-dialog-title" onCancel={(event) => { event.preventDefault(); closeOverlay() }}>
-      <div className="sale-dialog-heading"><div><span className="dialog-eyebrow">Demonstração</span><h2 id="sale-dialog-title">{preview ? 'Venda #' + preview.number : 'Venda não encontrada'}</h2></div><button className="dialog-close" aria-label="Fechar prévia" onClick={closeOverlay}><AppIcon name="close" size={18} /></button></div>
-      {preview ? <SalePreview sale={preview} /> : <div className="sale-dialog-body"><p>Este registro não existe na lista de demonstração.</p></div>}
-      <footer><button className="sales-primary" onClick={closeOverlay}>Voltar ao histórico</button></footer>
-    </dialog>
+    {overlay && <SaleDetail key={routePart} sale={preview} onClose={closeOverlay} onCancel={onCancel} onPrint={onPrint} />}
   </section>
-}
-
-function SalePreview({ sale }: { sale: Sale }) {
-  return <div className="sale-dialog-body">
-    <p className="preview-meta">{dateLabel(sale.date)} às {sale.time} · Caixa #{sale.cashSession} · {sale.status}</p>
-    <ul className="preview-items">{sale.items.map((item, index) => <li key={item.name + index}><span>{item.quantity}× {item.name}</span><strong>{money(item.priceCents * item.quantity)}</strong></li>)}</ul>
-    <dl className="preview-facts"><div><dt>Cliente</dt><dd>{sale.customer || 'Não informado'}</dd></div><div><dt>Operador</dt><dd>{sale.operator}</dd></div><div><dt>Meio informado</dt><dd>{sale.payment}</dd></div><div><dt>Envio simulado</dt><dd>{sale.sync}</dd></div></dl>
-    {(sale.discountCents ?? 0) > 0 && <p>Desconto: {money(sale.discountCents!)}</p>}
-    {sale.payments && <ul className="preview-items">{sale.payments.map((payment) => <li key={payment.method}><span>{payment.method}{payment.changeCents > 0 ? ' (troco: ' + money(payment.changeCents) + ')' : ''}</span><strong>{money(payment.appliedCents)}</strong></li>)}</ul>}
-    {sale.notes && <p>Observação: {sale.notes}</p>}
-    <div className="preview-total"><span>Total</span><strong>{money(totalCents(sale))}</strong></div>
-    <p className="preview-note">Prévia de consulta. Cancelamento, comprovante e detalhe completo serão implementados na T05.</p>
-  </div>
 }

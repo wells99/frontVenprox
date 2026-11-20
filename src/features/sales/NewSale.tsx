@@ -7,9 +7,11 @@ import type { DraftItem, Product } from './saleDraft'
 import { PaymentDialog } from './PaymentDialog'
 import type { DemoPayment } from './PaymentDialog'
 import { DemoDialog } from './DemoDialog'
+import { SaleConfirmation } from './SaleConfirmation'
+import type { CashSession } from '../cash/cashDemo'
 import './checkout.css'
 
-export function NewSale({ active, route, nextNumber, onComplete }: { active: boolean; route: string; nextNumber: number; onComplete: (sale: Sale) => void }) {
+export function NewSale({ active, route, sales, nextNumber, onComplete, onSync, onPrint, cashSession, opening, onOpenCash }: { cashSession?: CashSession; opening: boolean; onOpenCash: () => void; active: boolean; route: string; sales: Sale[]; nextNumber: number; onComplete: (sale: Sale) => void; onSync: (id: string, sync: Sale['sync']) => void; onPrint: (id: string) => void }) {
   const [items, setItems] = useState<DraftItem[]>([])
   const [query, setQuery] = useState('')
   const [quantity, setQuantity] = useState('1')
@@ -18,10 +20,10 @@ export function NewSale({ active, route, nextNumber, onComplete }: { active: boo
   const [customer, setCustomer] = useState('')
   const [notes, setNotes] = useState('')
   const [requireStock, setRequireStock] = useState(false)
-  const [cashOpen, setCashOpen] = useState(true)
+  const cashOpen = Boolean(cashSession)
   const [canDiscount, setCanDiscount] = useState(true)
   const [error, setError] = useState('')
-  const [dialog, setDialog] = useState<'manual' | 'discard' | 'cash' | undefined>(undefined)
+  const [dialog, setDialog] = useState<'manual' | 'discard' | undefined>(undefined)
   const [manualName, setManualName] = useState('')
   const [manualPrice, setManualPrice] = useState('')
   const [manualError, setManualError] = useState('')
@@ -32,6 +34,8 @@ export function NewSale({ active, route, nextNumber, onComplete }: { active: boo
   const customerRef = useRef<HTMLSelectElement>(null)
   const notesRef = useRef<HTMLTextAreaElement>(null)
   const paymentOpen = active && route === '/vendas/nova/pagamento'
+  const confirmationOpen = active && (route === '/vendas/nova/confirmacao' || route.startsWith('/vendas/nova/confirmacao/'))
+  const confirmedSale = confirmationOpen ? sales.find((sale) => sale.id === route.slice('/vendas/nova/confirmacao/'.length) && sale.id.startsWith('demo-new-')) : undefined
   const results = catalog.filter((product) => normalize(product.name + ' ' + product.code).includes(normalize(query.trim())))
   const highlighted = Math.min(resultIndex, Math.max(0, results.length - 1))
   const subtotal = subtotalOf(items)
@@ -39,7 +43,7 @@ export function NewSale({ active, route, nextNumber, onComplete }: { active: boo
   const total = Math.max(0, subtotal - discountCents)
   const validation = items.length ? validateDraft(items, discount, requireStock) : undefined
 
-  useEffect(() => { if (active && !paymentOpen && !dialog) searchRef.current?.focus() }, [active, paymentOpen, dialog])
+  useEffect(() => { if (active && !paymentOpen && !confirmationOpen && !dialog && !opening) searchRef.current?.focus() }, [active, paymentOpen, confirmationOpen, dialog, opening])
 
   function addProduct(product: Product) {
     const count = Number(quantity)
@@ -54,24 +58,25 @@ export function NewSale({ active, route, nextNumber, onComplete }: { active: boo
   function startPayment() {
     const problem = validateDraft(items, discount, requireStock)
     if (problem) { setError(problem); return }
-    if (!cashOpen) { setDialog('cash'); return }
+    if (!cashOpen) { onOpenCash(); return }
     setError(''); window.location.hash = '/vendas/nova/pagamento'
   }
   function resetDraft() {
     setItems([]); setQuery(''); setQuantity('1'); setDiscount('0,00'); setCustomer(''); setNotes(''); setError(''); draftId.current = crypto.randomUUID()
   }
   function complete(payments: DemoPayment[]) {
+    if (!cashSession) { onOpenCash(); return }
     const now = new Date()
     const activePayments = payments.filter((payment) => payment.appliedCents > 0)
     const sale: Sale = {
-      id: 'demo-new-' + draftId.current, number: nextNumber,
+      id: 'demo-new-' + draftId.current, number: nextNumber, recordedAt: now.toISOString(),
       date: [now.getFullYear(), String(now.getMonth() + 1).padStart(2, '0'), String(now.getDate()).padStart(2, '0')].join('-'),
       time: now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
       items: items.map(({ name, quantity: qty, priceCents }) => ({ name, quantity: qty, priceCents })),
       discountCents, payment: activePayments.length > 1 ? 'Misto' : activePayments[0].method,
-      payments, notes, customer, operator: 'Administrador exemplo', cashSession: 26, status: 'Concluída', sync: 'Pendente',
+      payments, notes, customer, operator: 'Administrador exemplo', cashSession: cashSession.number, status: 'Concluída', sync: 'Pendente',
     }
-    onComplete(sale); resetDraft(); window.location.assign('#/vendas')
+    onComplete(sale); resetDraft(); window.location.replace('#/vendas/nova/confirmacao/' + sale.id)
   }
   function addManual() {
     const price = parseMoney(manualPrice)
@@ -80,7 +85,7 @@ export function NewSale({ active, route, nextNumber, onComplete }: { active: boo
     setItems([...items, { id: crypto.randomUUID(), name: manualName.trim(), priceCents: price, quantity: count }]); setDialog(undefined); setManualName(''); setManualPrice(''); setQuantity('1'); setError('')
   }
   useEffect(() => {
-    if (!active || paymentOpen || dialog) return
+    if (!active || paymentOpen || confirmationOpen || dialog || opening) return
     function onKey(event: KeyboardEvent) {
       if (event.ctrlKey || event.altKey || event.metaKey || event.repeat) return
       if (event.key === 'F2') { event.preventDefault(); startPayment() }
@@ -116,10 +121,10 @@ export function NewSale({ active, route, nextNumber, onComplete }: { active: boo
       </div>
       <div className="cart-heading"><h2>Itens da venda <span>{items.length}</span></h2>{items.length > 0 && <button className="sales-text-button" onClick={() => setDialog('discard')}>Descartar rascunho</button>}</div>
       {!items.length ? <div className="cart-empty"><AppIcon name="cart" size={44} /><h3>Sua venda começa aqui</h3><p>Busque um produto ou adicione um item avulso.</p></div> : <div className="cart-scroll"><table className="cart-table"><caption className="visually-hidden">Itens do rascunho da venda</caption><thead><tr><th>Produto</th><th>Quantidade</th><th>Preço unitário</th><th>Total</th><th><span className="visually-hidden">Remover</span></th></tr></thead><tbody>{items.map((item) => <tr key={item.id}><td><strong>{item.name}</strong>{!item.productId && <small>Item avulso</small>}</td><td><input aria-label={'Quantidade de ' + item.name} type="number" min="1" max="999" value={item.quantity} onChange={(event) => { setItems(items.map((row) => row.id === item.id ? { ...row, quantity: Number(event.target.value) } : row)); setError('') }} /></td><td>{money(item.priceCents)}</td><td><b>{money(item.priceCents * item.quantity)}</b></td><td><button className="remove-item" aria-label={'Remover ' + item.name} onClick={() => { setItems(items.filter((row) => row.id !== item.id)); setError('') }}><AppIcon name="close" size={18} /></button></td></tr>)}</tbody></table></div>}
-      <details className="demo-controls checkout-scenarios"><summary>Cenários de demonstração</summary><p>Rascunho e vendas simuladas somem ao recarregar. Não há persistência, caixa real ou cobrança.</p><label className="check-option"><input type="checkbox" checked={requireStock} onChange={(event) => { setRequireStock(event.target.checked); setError('') }} />Exigir estoque disponível</label><label className="check-option"><input type="checkbox" checked={cashOpen} onChange={(event) => setCashOpen(event.target.checked)} />Caixa aberto (simulação)</label><label className="check-option"><input type="checkbox" checked={canDiscount} onChange={(event) => { setCanDiscount(event.target.checked); if (!event.target.checked) setDiscount('0,00') }} />Permitir desconto (simulação)</label></details>
+      <details className="demo-controls checkout-scenarios"><summary>Cenários de demonstração</summary><p>Rascunho e vendas simuladas somem ao recarregar. Não há persistência, caixa real ou cobrança.</p><label className="check-option"><input type="checkbox" checked={requireStock} onChange={(event) => { setRequireStock(event.target.checked); setError('') }} />Exigir estoque disponível</label><label className="check-option"><input type="checkbox" checked={canDiscount} onChange={(event) => { setCanDiscount(event.target.checked); if (!event.target.checked) setDiscount('0,00') }} />Permitir desconto (simulação)</label></details>
     </div>
     <aside className="checkout-summary" aria-label="Resumo da venda">
-      <div className="draft-heading"><strong>{items.length} {items.length === 1 ? 'item' : 'itens'}</strong><span>{items.reduce((sum, item) => sum + item.quantity, 0)} unidades</span><small>Caixa #26 · {cashOpen ? 'aberto' : 'fechado'} na simulação</small></div>
+      <div className="draft-heading"><strong>{items.length} {items.length === 1 ? 'item' : 'itens'}</strong><span>{items.reduce((sum, item) => sum + item.quantity, 0)} unidades</span><small>{cashSession ? 'Caixa #' + cashSession.number + ' · aberto na simulação' : 'Sem caixa aberto'}</small></div>
       <label>Cliente opcional <kbd>F5</kbd><select ref={customerRef} value={customer} onChange={(event) => setCustomer(event.target.value)}><option value="">Sem cliente</option><option>Cliente demonstração</option><option>Cliente exemplo</option></select></label>
       <label>Observações <kbd>F4</kbd><textarea ref={notesRef} rows={3} maxLength={300} value={notes} placeholder="Adicionar uma observação" onChange={(event) => setNotes(event.target.value)} /></label>
       <label>Desconto em reais <kbd>F3</kbd><input ref={discountRef} inputMode="decimal" value={discount} disabled={!canDiscount} onFocus={(event) => event.target.select()} onChange={(event) => { setDiscount(event.target.value); setError('') }} /></label>
@@ -130,8 +135,9 @@ export function NewSale({ active, route, nextNumber, onComplete }: { active: boo
     </aside>
     {active && dialog === 'manual' && <DemoDialog title="Adicionar item avulso" onClose={() => setDialog(undefined)}><form onSubmit={(event) => { event.preventDefault(); addManual() }}><div className="sale-dialog-body checkout-form"><label>Descrição<input data-initial-focus maxLength={100} value={manualName} onChange={(event) => setManualName(event.target.value)} /></label><label>Preço unitário (R$)<input inputMode="decimal" value={manualPrice} onChange={(event) => setManualPrice(event.target.value)} placeholder="0,00" /></label><p>Quantidade: {quantity}. Não exige cadastro nem gera baixa de um produto fictício.</p>{manualError && <p className="checkout-error" role="alert">{manualError}</p>}</div><footer><button className="sales-secondary" type="button" onClick={() => setDialog(undefined)}>Cancelar</button><button className="sales-primary" type="submit">Adicionar avulso</button></footer></form></DemoDialog>}
     {active && dialog === 'discard' && <DemoDialog title="Descartar rascunho?" onClose={() => setDialog(undefined)}><div className="sale-dialog-body"><p>Os itens, o desconto e os dados desta venda simulada serão removidos. Para manter, basta voltar ao histórico sem descartar.</p></div><footer><button className="sales-secondary" onClick={() => setDialog(undefined)}>Continuar venda</button><button className="sales-primary" onClick={() => { resetDraft(); setDialog(undefined) }}>Descartar rascunho</button></footer></DemoDialog>}
-    {active && dialog === 'cash' && <DemoDialog title="Caixa fechado na simulação" onClose={() => setDialog(undefined)}><div className="sale-dialog-body"><p>A conclusão exige um caixa aberto com valor inicial informado. A tela de abertura T06 será implementada em sua etapa.</p><p>Para testar estas telas agora, escolha o cenário “Caixa aberto (simulação)”. O rascunho foi mantido.</p></div><footer><button className="sales-primary" onClick={() => setDialog(undefined)}>Voltar à venda</button></footer></DemoDialog>}
-    {paymentOpen && items.length > 0 && !validation && cashOpen && <PaymentDialog total={total} onBack={() => { window.location.replace('#/vendas/nova') }} onConfirm={complete} />}
-    {paymentOpen && (!items.length || validation || !cashOpen) && <DemoDialog title="Revise a venda" onClose={() => { window.location.replace('#/vendas/nova') }}><div className="sale-dialog-body"><p>{!items.length ? 'Não há rascunho disponível nesta sessão. Adicione os itens antes de conferir o pagamento.' : validation || 'O caixa está fechado na simulação.'}</p></div><footer><button className="sales-primary" onClick={() => { window.location.replace('#/vendas/nova') }}>Voltar à venda</button></footer></DemoDialog>}
+
+    {paymentOpen && items.length > 0 && !validation && cashOpen && !opening && <PaymentDialog total={total} onBack={() => { window.location.replace('#/vendas/nova') }} onConfirm={complete} />}
+    {paymentOpen && !opening && (!items.length || validation || !cashOpen) && <DemoDialog title="Revise a venda" onClose={() => { window.location.replace('#/vendas/nova') }}><div className="sale-dialog-body"><p>{!items.length ? 'Não há rascunho disponível nesta sessão. Adicione os itens antes de conferir o pagamento.' : validation || 'O caixa está fechado na simulação.'}</p></div><footer><button className="sales-primary" onClick={() => { window.location.replace('#/vendas/nova') }}>Voltar à venda</button></footer></DemoDialog>}
+    {confirmationOpen && <SaleConfirmation key={confirmedSale?.id ?? 'missing'} sale={confirmedSale} onSync={onSync} onPrint={onPrint} onClose={() => { window.location.replace('#/vendas') }} onNewSale={() => { resetDraft(); window.location.replace('#/vendas/nova') }} />}
   </section>
 }

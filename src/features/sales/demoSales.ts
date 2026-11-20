@@ -4,6 +4,7 @@ export type Sale = {
   number: number
   date: string
   time: string
+  recordedAt?: string
   items: { name: string; quantity: number; priceCents: number }[]
   payment: PaymentMethod | 'Misto'
   discountCents?: number
@@ -14,6 +15,8 @@ export type Sale = {
   cashSession: number
   status: 'Concluída' | 'Cancelada'
   sync: 'Recebida' | 'Pendente'
+  cancellation?: { reason: string; operator: string; at: string }
+  printCount?: number
 }
 
 // Massa fixa e inteiramente fictícia para validar T01 sem banco ou integração.
@@ -37,9 +40,16 @@ export const demoSales: Sale[] = Array.from({ length: 24 }, (_, index) => ({
   operator: index % 3 ? 'Operador exemplo' : 'Administrador exemplo',
   cashSession: index < 16 ? 26 : 25,
   status: index === 7 || index === 20 ? 'Cancelada' : 'Concluída',
+  cancellation: index === 7 || index === 20 ? { reason: 'Registro duplicado na demonstração.', operator: 'Administrador exemplo', at: '2026-11-20T12:00:00-03:00' } : undefined,
   sync: index < 3 ? 'Pendente' : 'Recebida',
 }))
 export const totalCents = (sale: Sale) => sale.items.reduce((sum, item) => sum + item.priceCents * item.quantity, 0) - (sale.discountCents ?? 0)
 export const money = (cents: number) => (cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 export const dateLabel = (value: string) => value.split('-').reverse().join('/')
 export const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+
+// Contrato apenas em memória: a mesma venda nunca é revertida duas vezes.
+export function cancelDemoSale(sale: Sale, reason: string, authorized: boolean, at: string): Sale {
+  if (!authorized || !reason.trim() || reason.trim().length > 300 || sale.status === 'Cancelada') return sale
+  return { ...sale, status: 'Cancelada', sync: 'Pendente', cancellation: { reason: reason.trim(), operator: 'Administrador exemplo', at } }
+}

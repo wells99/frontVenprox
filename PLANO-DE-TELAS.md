@@ -1,6 +1,6 @@
 # Venprox — ordem de construção do frontend
 
-**Total inicial: 25 unidades de interface — 1 estrutura, 11 páginas, 12 modais/painéis e 1 assistente opcional.** Não são 25 páginas na barra lateral: existem **8 destinos principais**. T00, T01, T02 e T03 estão implementadas; o fluxo usa dados fictícios em memória. As demais continuam planejadas.
+**Total inicial: 25 unidades de interface — 1 estrutura, 11 páginas, 12 modais/painéis e 1 assistente opcional.** Não são 25 páginas na barra lateral: existem **8 destinos principais**. T00 a T07 estão implementadas; o fluxo usa dados fictícios em memória. As demais continuam planejadas.
 
 ## Como se conectam
 
@@ -25,10 +25,10 @@ A ordem abaixo é de construção visual, não a ordem obrigatória de uso da lo
 | 01 | T01 — Histórico de vendas | página | [01-vendas.md](telas/01-vendas.md) | FEITO - 20/11/2026 (simulação) |
 | 02 | T02 — Montagem da venda | página | [02-nova-venda.md](telas/02-nova-venda.md) | FEITO - 20/11/2026 (simulação) |
 | 03 | T03 — Conferência de pagamento | modal | [03-pagamento.md](telas/03-pagamento.md) | FEITO - 20/11/2026 (simulação) |
-| 04 | T04 — Confirmação da venda | modal | [04-confirmacao-venda.md](telas/04-confirmacao-venda.md) | Planejada |
-| 05 | T05 — Detalhe, cancelamento e comprovante | painel | [05-detalhe-venda.md](telas/05-detalhe-venda.md) | Planejada |
-| 06 | T06 — Abertura de caixa | modal | [06-abertura-caixa.md](telas/06-abertura-caixa.md) | Planejada |
-| 07 | T07 — Caixa atual e anteriores | página | [07-caixa.md](telas/07-caixa.md) | Planejada |
+| 04 | T04 — Confirmação da venda | modal | [04-confirmacao-venda.md](telas/04-confirmacao-venda.md) | FEITO - 20/11/2026 (simulação) |
+| 05 | T05 — Detalhe, cancelamento e comprovante | painel | [05-detalhe-venda.md](telas/05-detalhe-venda.md) | FEITO - 20/11/2026 (simulação) |
+| 06 | T06 — Abertura de caixa | modal | [06-abertura-caixa.md](telas/06-abertura-caixa.md) | FEITO - 20/11/2026 (simulação) |
+| 07 | T07 — Caixa atual e anteriores | página | [07-caixa.md](telas/07-caixa.md) | FEITO - 20/11/2026 (simulação) |
 | 08 | T08 — Suprimento e sangria | modal | [08-movimento-caixa.md](telas/08-movimento-caixa.md) | Planejada |
 | 09 | T09 — Conferência e fechamento | modal | [09-fechamento-caixa.md](telas/09-fechamento-caixa.md) | Planejada |
 | 10 | T10 — Lista de produtos | página | [10-produtos.md](telas/10-produtos.md) | Planejada |
@@ -49,9 +49,9 @@ A ordem abaixo é de construção visual, não a ordem obrigatória de uso da lo
 
 ## Entrega atual e próximo passo
 
-T00: React + TypeScript + Vite, ícones próprios, barra lateral clara, links por hash com seleção ativa e recolhimento. T01 contém histórico e prévias; T02 permite montar rascunho; T03 confere pagamentos/troco e inclui uma venda simulada no Histórico. Dados apenas em memória, identificados como fictícios. As outras sete áreas continuam com centro vazio. Não há persistência, caixa/cobrança ou integração real.
+T00: React + TypeScript + Vite, ícones próprios, barra lateral clara, links por hash com seleção ativa e recolhimento. T01 contém o histórico; T02 permite montar rascunho; T03 confere pagamentos/troco e inclui uma venda simulada no Histórico; T04 mostra confirmação, número/valor, nova venda vazia e retorno ao Histórico, com cenários de impressão/reimpressão e envio. T05 abre o detalhe completo, cancelamento com motivo/permissão simulada e prévia do comprovante não fiscal, preservando o contexto do Histórico. Dados apenas em memória, identificados como fictícios. T06 abre uma sessão simulada com valor inicial explícito; T07 mostra caixa atual/anteriores e movimentos, separando dinheiro, digitais e fiado. As outras seis áreas continuam com centro vazio. Não há persistência, caixa/cobrança ou integração real.
 
-**Próxima tela: T04, Confirmação da Venda.** T01 → T02 → T03 já permite montar e concluir uma venda simulada, retornando provisoriamente ao Histórico com mensagem e um novo registro em memória. T05 continua planejada, com apenas prévia informativa; T06 não foi antecipada, usando cenário explícito de caixa aberto/fechado para exercitar T02/T03. Seguir por unidade preservando a estrutura comum.
+**Próxima tela: T08, Suprimento e sangria.** T06/T07 estão conectadas: a demonstração inicia sem sessão aberta; Nova Venda passa pela abertura e retoma a montagem, ou o caixa pode ser aberto pela própria página Caixa. Vendas e cancelamentos da sessão atual atualizam o livro em memória; sessões encerradas preservam seus valores. T08/T09 permanecem indicadas como futuras, sem ações que aparentem funcionar. Seguir por unidade preservando a estrutura comum.
 
 ## Ciclo de trabalho para cada tela
 
@@ -65,9 +65,10 @@ T00: React + TypeScript + Vite, ícones próprios, barra lateral clara, links po
 
 - **Cores:** [src/theme.css](src/theme.css) é a paleta global, importada por `src/index.css`. Usar variáveis semânticas como `var(--color-accent)` e `var(--color-text)` nos estilos. Alterar a variável atualiza seus usos; criar novos tons nesse arquivo, sem repetir cores literais nas telas.
 - **Ícones:** [src/ui/AppIcon.tsx](src/ui/AppIcon.tsx) contém o catálogo SVG e o mapa de pagamentos. Usar `AppIcon` para ações/navegação e `PaymentIcon` para meios de pagamento. Trocar o desenho no catálogo atualiza todas as ocorrências desse ícone; trocar o mapa de pagamento atualiza Histórico e conferência. Novas telas devem importar esses componentes, sem copiar SVG ou usar caracteres como ícones. Símbolos textuais de quantidade/moeda continuam sendo texto.
+- **Caixa compartilhado:** sessão de demonstração em `App.tsx`, com regras/cálculos em `src/features/cash/cashDemo.ts`. Não voltar ao número fixo #26 ou à opção local de “Caixa aberto” na T02. Abertura é explícita; fechamento e movimentos manuais aguardam T08/T09. Verificação do modelo: `npm.cmd test`.
 - **Pagamento por teclado:** na T03, ↑/↓ selecionam o meio e transferem o total quando o pagamento está concentrado em um único meio. Se já houver divisão, preservam os valores e movem o foco; Tab permite edição livre. Não ampliar esse atalho para fora do modal nem remover o bloqueio de confirmação duplicada.
 
-Atualização de 20/11/2026: paleta e ícones unificados nas telas existentes; navegação da T03 validada no navegador. T04 continua planejada.
+Atualização de 20/11/2026: paleta e ícones unificados nas telas existentes; navegação de T03/T04 validada no navegador. T05 entregue com detalhe, cancelamento protegido contra repetição, comprovante não fiscal e impressão simulada; fluxo T02–T05 e contexto do Histórico validados no navegador. T06/T07 entregues com abertura explícita, consulta de sessões e movimentos simulados; T08/T09 e integrações reais continuam planejadas.
 
 ## Defaults e limites que devem acompanhar as telas
 

@@ -19,6 +19,8 @@ const shapes = {
   card: <><rect x="2" y="4" width="20" height="16" rx="3" /><path d="M2 9h20M6 15h4" /></>,
   pix: <><path d="m12 2 10 10-10 10L2 12 12 2Z" /><path d="m5 9 3 3 4-4 4 4 3-3M5 15l3-3m8 0 3 3" /></>,
   mixed: <><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M7 8h10m-3-3 3 3-3 3M17 16H7m3-3-3 3 3 3" /></>,
+  check: <path d="m5 12 4 4L19 6" />,
+  printer: <><path d="M7 8V3h10v5M7 17H4V8h16v9h-3M7 14h10v7H7zM16 11h1" /></>,
 }
 export type IconName = keyof typeof shapes
 export function AppIcon({ name, size = 22, className = '', ...props }: Omit<SVGProps<SVGSVGElement>, 'name'> & { name: IconName; size?: number }) {

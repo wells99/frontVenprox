@@ -16,7 +16,7 @@ Busca no alto, quantidade, resultados e itens no centro, resumo à direita, tota
 
 ## Interações e retorno
 
-Adicionar por clique ou Enter, inclusive código de barras; setas selecionam resultados e mantêm o selecionado visível. Alterar/remover item, cliente opcional, observação e desconto. F2 → T03; F3 foca desconto, F4 observação, F5 cliente e F12 quantidade. Sem caixa aberto, mostrar explicação e manter rascunho; a abertura completa T06 ainda não foi implementada.
+Adicionar por clique ou Enter, inclusive código de barras; setas selecionam resultados e mantêm o selecionado visível. Alterar/remover item, cliente opcional, observação e desconto. F2 → T03; F3 foca desconto, F4 observação, F5 cliente e F12 quantidade. Sem caixa aberto, T06 exige valor inicial explícito e retorna à montagem; cancelar mantém o rascunho e retorna ao Histórico.
 
 ## Regras e aceite visual
 
@@ -36,12 +36,12 @@ Implementação em `src/features/sales/NewSale.tsx`, regras de rascunho em `sale
 - Padrão permissivo aceita produtos com saldo zero/negativo silenciosamente. O cenário “Exigir estoque disponível” bloqueia avulso e quantidades acima do saldo, inclusive ao concluir.
 - Cliente opcional de demonstração, observação e desconto em reais, menor que o subtotal. A permissão de desconto é apenas cenário fictício, não autorização de backend.
 - Rascunho mantido em memória ao voltar ao Histórico ou trocar de seção; descarte explícito pede confirmação. Recarregar/fechar a página perde o rascunho.
-- “Caixa aberto (simulação)” começa marcado para exercitar T02/T03 sem antecipar T06. Se desmarcado, conclusão é bloqueada e explica a etapa de abertura; não existe sessão de caixa real.
+- A partir de T06/T07, a sessão é compartilhada em `App.tsx`. Nova Venda sem sessão passa pela abertura explícita; a venda concluída registra o número dessa sessão e atualiza seus movimentos. A antiga opção local “Caixa aberto (simulação)” foi removida; continua sem caixa físico ou persistência real.
 - Concluir encaminha a `#/vendas/nova/pagamento`. Ao finalizar a simulação, um registro único com desconto, meios e observação entra no Histórico em memória, e o rascunho é limpo.
 
 ## Validação realizada
 
 Em 20/11/2026: build e lint aprovados; testes em Edge conferiram quantidade/código/Enter, avulso inválido/válido, estoque obrigatório, quantidade acima do saldo, desconto inválido/válido, cliente/observação, rascunho, descarte, caixa fechado e ligação com T03. Validadas larguras 1366, 1920 e 375 px; tabela tem rolagem própria quando necessário. Verificações de centavos, quantidade e estoque agregado também passaram.
 
-O catálogo/saldo é uma massa fixa de teste e não um estoque compartilhado atualizado pelas vendas. UUIDs/rascunho/dados de demonstração existem só na sessão. Integração real de persistência e regras de autorização continua para etapa própria. T04, T06 e T15 completas permanecem planejadas.
+O catálogo/saldo é uma massa fixa de teste e não um estoque compartilhado atualizado pelas vendas. UUIDs/rascunho/dados de demonstração existem só na sessão. Integração real de persistência e regras de autorização continua para etapa própria. T04 foi conectada em 20/11/2026, permitindo iniciar uma nova venda vazia após concluir. T06/T07 foram conectadas em 20/11/2026; T15 permanece planejada.
 

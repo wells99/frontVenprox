@@ -16,7 +16,7 @@ Título Vendas, Nova Venda F3, busca/filtros e lista: número, data/hora, resumo
 
 ## Interações e retorno
 
-Nova venda/F3 abre a T02 implementada; abrir/F2 ou duplo clique mostra uma prévia de consulta do registro, reservando o detalhe completo para T05. Escape/Voltar fecham a prévia; o histórico mantém filtros e paginação. Cancelar será ação distinta e autorizada no detalhe completo, ainda não implementado.
+Nova venda/F3 abre a T02 implementada; abrir/F2 ou duplo clique abre o painel de detalhe T05. Escape/Voltar fecham o detalhe; o histórico mantém filtros, ordenação e paginação, restaurando o foco à venda quando ela continua visível. Cancelar é ação distinta na T05, com motivo obrigatório e permissão simulada.
 
 ## Regras e aceite visual
 
@@ -26,7 +26,7 @@ Validar teclado, foco visível, vazio, erro e carregamento sem perder contexto. 
 
 ## Limite desta etapa
 
-Implementada na estrutura T00, em `src/features/sales/SalesHistory.tsx`, com estilos em `sales.css` e 24 registros fictícios iniciais em `demoSales.ts`. Após a entrega de T02/T03, o Histórico também recebe vendas concluídas na simulação, com desconto e meio Misto quando aplicável. A prévia mostra os valores, pagamentos/troco e observação; T05 completa continua planejada, sem cancelamento/impressão. Nada é gravado em banco ou enviado.
+Implementada na estrutura T00, em `src/features/sales/SalesHistory.tsx`, com estilos em `sales.css` e 24 registros fictícios iniciais em `demoSales.ts`. Após a entrega de T02/T03, o Histórico também recebe vendas concluídas na simulação, com desconto e meio Misto quando aplicável. A T05 substitui a prévia inicial e mostra valores, pagamentos/troco e observação, além de cancelamento e prévia/impressão simulada de comprovante não fiscal. Canceladas continuam consultáveis e não entram no total das concluídas. Nada é gravado em banco ou enviado.
 
 ## Simulações disponíveis
 
