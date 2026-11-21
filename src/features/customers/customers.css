@@ -1,0 +1,29 @@
+.customers-table { min-width: 660px; margin-top: 0; }
+.customers-table tbody tr { cursor: pointer; }
+.customers-table :is(th,td) { text-align: left; }
+.customers-table td:nth-child(3) { font-variant-numeric: tabular-nums; }
+.customer-row-actions, .customer-selection-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.customer-selection-banner { margin-bottom: 18px; padding: 12px; border: 1px solid var(--color-selected-border); border-radius: 5px; background: var(--color-selected); }
+.customer-credit-summary { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 20px; padding: 22px; margin: 20px 0; border: 1px solid var(--color-border); border-radius: 7px; background: var(--color-surface-subtle); }
+.customer-credit-summary h2 { margin: 0 0 10px; font-size: 18px; }
+.customer-credit-summary p { font-size: 12px; color: var(--color-text-muted); line-height: 1.6; }
+.customer-debt { display: grid; gap: 8px; align-content: center; }
+.customer-debt span { font-size: 12px; color: var(--color-text-muted); }
+.customer-debt strong { font-size: 28px; color: var(--color-heading); font-variant-numeric: tabular-nums; }
+.customer-credit-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
+.credit-history { min-width: 900px; }
+.credit-history small { max-width: 240px; white-space: normal; overflow-wrap: anywhere; line-height: 1.6; }
+.credit-history .credit-reversed { color: var(--color-text-muted); }
+.credit-preview { display: grid; gap: 10px; padding: 16px; border-radius: 5px; background: var(--color-selected); margin: 18px 0; }
+.credit-preview p { margin: 0; font-size: 12px; line-height: 1.7; }
+@media (max-width: 600px) { .customer-credit-summary { grid-template-columns: 1fr; padding: 16px; } }
+
+.customer-history-heading { font-size: 16px; margin: 24px 0 16px; color: var(--color-heading); }
+
+.sales-dialog.credit-dialog { max-height: calc(100dvh - 32px); overflow: hidden; }
+.credit-dialog[open] { display: flex; flex-direction: column; }
+.credit-dialog > .sale-dialog-heading { flex-shrink: 0; }
+.credit-dialog > form { display: flex; flex-direction: column; min-height: 0; }
+.credit-dialog-scroll { overflow-y: auto; min-height: 0; }
+.credit-dialog .editor-body > label { margin-bottom: 14px; }
+.credit-dialog footer { flex-shrink: 0; }

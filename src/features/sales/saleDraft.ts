@@ -1,5 +1,5 @@
-export type Product = { id: string; code: string; name: string; priceCents: number; stock: number }
-export type DraftItem = { id: string; productId?: string; name: string; quantity: number; priceCents: number }
+export type Product = { id: string; code: string; name: string; priceCents: number; stock: number; active?: boolean }
+export type DraftItem = { id: string; productId?: string; name: string; quantity: number; priceCents: number; costCents?: number }
 export const catalog: Product[] = [
   { id: 'water', code: '7891000000011', name: 'Água mineral 500 ml', priceCents: 250, stock: 25 },
   { id: 'coffee', code: 'CAFE', name: 'Café', priceCents: 350, stock: 0 },
@@ -27,6 +27,8 @@ export function validateDraft(items: DraftItem[], discount: string, requireStock
   if (discountCents >= subtotalOf(items)) return 'O desconto deve ser menor que o subtotal da venda.'
   if (requireStock) {
     if (items.some((item) => !item.productId)) return 'O modo de estoque obrigatório não permite itens avulsos. Remova-os ou volte ao modo permissivo.'
+    const invalidItem = items.find((item) => !products.some((product) => product.id === item.productId && product.active !== false))
+    if (invalidItem) return 'O modo estrito exige produto ativo cadastrado: ' + invalidItem.name + '.'
     for (const product of products) {
       const quantity = items.filter((item) => item.productId === product.id).reduce((sum, item) => sum + item.quantity, 0)
       if (quantity > Math.max(0, product.stock)) return 'Estoque insuficiente para ' + product.name + '. Disponível: ' + Math.max(0, product.stock) + '.'

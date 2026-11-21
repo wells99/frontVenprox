@@ -1,6 +1,8 @@
+FEITO - 20/11/2026 (simulação)
+
 # T16 — Cadastro mínimo de cliente
 
-**Tipo:** modal. **Estado:** especificada, não implementada. **Ordem:** 16. **Data:** 20/11/2026.
+**Tipo:** modal. **Estado:** implementada em memória. **Ordem:** 16. **Data:** 20/11/2026.
 
 [Voltar ao roteiro](../PLANO-DE-TELAS.md) · [Guia geral](../../docs/frontend.md)
 
@@ -26,3 +28,7 @@ Validar teclado, foco visível, vazio, erro e carregamento sem perder contexto. 
 
 Implementar esta unidade isoladamente quando chegar sua vez, montando-a na estrutura T00. Não criar as outras telas por antecipação. Nesta fase de frontend, usar apenas dados fictícios identificados quando necessários; persistência, permissões efetivas, impressão, sincronização e Google dependem de adaptadores futuros. Prototipar ação não comprova operação real.
 
+
+## Entrega e validação
+
+Modal de cadastro/edição com nome obrigatório, contato opcional e ativo. Identidade estável por UUID, nomes repetidos permitidos, versão validada e cenários de falha/conflito sem perder campos. Bloqueio de repetição durante salvamento, Esc/cancelar e retorno de foco. Cadastro na escolha da venda mantém o rascunho; seleção retorna sem criar fiado. Build/lint aprovados; navegador confirmou erro de nome vazio, homônimos sem contato e escolha de cliente com itens preservados. Sem persistência, Google ou documento obrigatório.

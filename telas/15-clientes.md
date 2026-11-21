@@ -1,6 +1,8 @@
+FEITO - 20/11/2026 (simulação)
+
 # T15 — Lista de clientes
 
-**Tipo:** página. **Estado:** especificada, não implementada. **Ordem:** 15. **Data:** 20/11/2026.
+**Tipo:** página. **Estado:** implementada em memória. **Ordem:** 15. **Data:** 20/11/2026.
 
 [Voltar ao roteiro](../PLANO-DE-TELAS.md) · [Guia geral](../../docs/frontend.md)
 
@@ -26,3 +28,9 @@ Validar teclado, foco visível, vazio, erro e carregamento sem perder contexto. 
 
 Implementar esta unidade isoladamente quando chegar sua vez, montando-a na estrutura T00. Não criar as outras telas por antecipação. Nesta fase de frontend, usar apenas dados fictícios identificados quando necessários; persistência, permissões efetivas, impressão, sincronização e Google dependem de adaptadores futuros. Prototipar ação não comprova operação real.
 
+
+## Entrega e validação
+
+Lista com dados fictícios, busca por nome/contato, situação, paginação e estados de carregamento, erro, vazio e sem resultados. Seleção por clique e ↑/↓. Seleção iniciada pela venda retorna ao rascunho e permite continuar sem cliente; clientes inativos ficam fora dessa seleção. Build/lint aprovados; navegador confirmou busca e navegação por setas. Cadastro/edição é conectado na T16 e saldo/histórico na T17. Sem persistência ou documento obrigatório.
+
+Conexões finais T15–T18: cadastro e edição disponíveis por botão, dois cliques e F2; consulta de dívida e acesso ao fiado por cliente. Seleção da venda usa identidade estável, distingue homônimos e exclui inativos. Filtros, seleção e foco preservados ao voltar do fiado. Fluxo de escolha de cliente e rascunho validado no navegador.

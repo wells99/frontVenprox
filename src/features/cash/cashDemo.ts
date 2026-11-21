@@ -6,11 +6,14 @@ export const demoOperator = 'Administrador exemplo'
 export const cashMethods: PaymentMethod[] = ['Dinheiro', 'Crédito', 'Débito', 'Pix']
 export type CashMovement = {
   id: string
-  kind: 'opening' | 'sale' | 'cancellation' | 'credit-receipt' | 'supply' | 'withdrawal'
+  kind: 'opening' | 'sale' | 'cancellation' | 'credit-receipt' | 'credit-reversal' | 'supply' | 'withdrawal'
   description: string
   at: string
   amounts: Partial<Record<PaymentMethod, number>>
   operator: string
+  customerId?: string
+  creditEntryId?: string
+  reversesCreditEntryId?: string
   saleId?: string
 }
 export type CashSession = {
@@ -60,7 +63,7 @@ export function summarizeCash(session: CashSession) {
   const sumKind = (kind: CashMovement['kind']) => session.movements.filter((movement) => movement.kind === kind).reduce((sum, movement) => sum + movementTotal(movement), 0)
   const byMethod = Object.fromEntries(cashMethods.map((method) => [method, session.movements.reduce((sum, movement) => sum + (movement.amounts[method] ?? 0), 0)])) as Record<PaymentMethod, number>
   const salesByMethod = Object.fromEntries(cashMethods.map((method) => [method, session.movements.filter((movement) => movement.kind === 'sale' || movement.kind === 'cancellation').reduce((sum, movement) => sum + (movement.amounts[method] ?? 0), 0)])) as Record<PaymentMethod, number>
-  return { byMethod, salesByMethod, opening: sumKind('opening'), sales: sumKind('sale'), cancellations: Math.abs(sumKind('cancellation')), creditReceipts: sumKind('credit-receipt'), supplies: sumKind('supply'), withdrawals: Math.abs(sumKind('withdrawal')), expectedCash: byMethod.Dinheiro, digital: byMethod.Crédito + byMethod.Débito + byMethod.Pix }
+  return { byMethod, salesByMethod, opening: sumKind('opening'), sales: sumKind('sale'), cancellations: Math.abs(sumKind('cancellation')), creditReceipts: sumKind('credit-receipt') + sumKind('credit-reversal'), supplies: sumKind('supply'), withdrawals: Math.abs(sumKind('withdrawal')), expectedCash: byMethod.Dinheiro, digital: byMethod.Crédito + byMethod.Débito + byMethod.Pix }
 }
 
 export function openDemoSession(sessions: CashSession[], amount: number, at: string): CashSession[] {

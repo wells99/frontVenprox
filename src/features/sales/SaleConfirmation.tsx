@@ -73,7 +73,7 @@ export function SaleConfirmation({ sale, onClose, onNewSale, onSync, onPrint }: 
         </div>
         <div className="confirmation-print">
           <button className="sales-secondary" disabled={!printerAvailable || printing} onClick={print}><AppIcon name="printer" size={17} />{printing ? 'Simulando impressão…' : sale.printCount ? 'Simular reimpressão' : 'Simular impressão'}</button>
-          <p>{printerAvailable ? 'Comprovante não fiscal · impressão automática desligada.' : 'Impressora indisponível no cenário. A venda continua concluída.'}</p>
+          <p>{printerAvailable ? sale.automaticPrintProfile ? 'Comprovante não fiscal · impressão automática simulada nesta venda (' + sale.automaticPrintProfile + '). Nenhum papel foi impresso.' : 'Comprovante não fiscal · impressão automática desligada.' : 'Impressora indisponível no cenário. A venda continua concluída.'}</p>
         </div>
         {printMessage && <p className={printError ? 'checkout-error' : 'confirmation-print-result'} role={printError ? 'alert' : 'status'}>{printMessage}</p>}
         <details className="demo-controls confirmation-scenarios">

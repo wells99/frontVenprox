@@ -6,6 +6,21 @@ import { SalesHistory } from './features/sales/SalesHistory'
 import { NewSale } from './features/sales/NewSale'
 import { cancelDemoSale, demoSales } from './features/sales/demoSales'
 import type { Sale } from './features/sales/demoSales'
+import { CreditDialog } from './features/customers/CreditDialog'
+import type { CreditAction } from './features/customers/CreditPage'
+import type { CreditEntry } from './features/customers/creditDemo'
+import { CreditPage } from './features/customers/CreditPage'
+import { creditBalance, demoCreditEntries, registerCreditCommand, validateCreditCommand } from './features/customers/creditDemo'
+import { CustomersPage } from './features/customers/CustomersPage'
+import { CustomerEditor } from './features/customers/CustomerEditor'
+import type { Customer } from './features/customers/customerDemo'
+import { demoCustomers, validateCustomer } from './features/customers/customerDemo'
+import { RecoveryPage } from './features/settings/RecoveryPage'
+import { SyncPage } from './features/settings/SyncPage'
+import { SettingsPage } from './features/settings/SettingsPage'
+import { applyPreferences, defaultPreferences, simulateAutomaticPrint, validatePreferences } from './features/settings/settingsDemo'
+import { ReportsPage } from './features/reports/ReportsPage'
+import { BillsArea } from './features/bills/BillsArea'
 import { CashPage } from './features/cash/CashPage'
 import type { Category } from './features/products/CategoryPanel'
 import { normalize } from './features/sales/demoSales'
@@ -51,16 +66,39 @@ export default function App() {
     if (current && (current.version ?? 0) !== (product.version ?? 0)) return 'Este produto mudou. Feche e abra novamente para revisar a versão atual.'
     setProducts((previous) => current ? previous.map((item) => item.id === product.id ? { ...product, stock: item.stock, version: (item.version ?? 0) + 1 } : item) : [...previous, { ...product, version: 1 }])
   }
+  const [settingsTab, setSettingsTab] = useState('user')
+  const [settingsReturnFocus, setSettingsReturnFocus] = useState<string | undefined>(undefined)
+  const [preferences, setPreferences] = useState(() => ({...defaultPreferences}))
   const [collapsed, setCollapsed] = useState(false)
-  const [demo, setDemo] = useState(() => ({ sales: demoSales, sessions: createDemoSessions(demoSales) }))
-  const { sales, sessions } = demo
+  const [demo, setDemo] = useState(() => ({ sales: demoSales, sessions: createDemoSessions(demoSales), customers: demoCustomers, creditEntries: demoCreditEntries }))
+  const { sales, sessions, customers } = demo
+  const creditActive = activeId === 'clientes' && route.startsWith('/clientes/fiado/')
+  const creditCustomer = customers.find((item) => item.id === route.split('/')[3])
+  const [creditMovement, setCreditMovement] = useState<{ customerId: string; action: CreditAction; original?: CreditEntry } | null>(null)
+  const creditMovementFocus = useRef<HTMLElement | null>(null)
+  const creditReturnFocus = useRef<HTMLElement | null>(null)
+  function closeCreditMovement() { setCreditMovement(null); requestAnimationFrame(() => { const target = creditMovementFocus.current; if (target?.isConnected && !target.matches(':disabled')) target.focus(); else document.getElementById('credit-title')?.focus() }) }
+  const [customerEditor, setCustomerEditor] = useState<Customer | 'new' | null>(null)
+  const customerReturnFocus = useRef<HTMLElement | null>(null)
+  const [customerNotice, setCustomerNotice] = useState('')
+  function editCustomer(customer: Customer | 'new') { customerReturnFocus.current = document.activeElement as HTMLElement; setCustomerEditor(customer); setCustomerNotice('') }
+  function closeCustomerEditor() { setCustomerEditor(null); requestAnimationFrame(() => customerReturnFocus.current?.focus()) }
+  function saveCustomer(customer: Customer) {
+    const error = validateCustomer(customers, customer)
+    if (error) return error
+    setDemo((previous) => ({ ...previous, customers: previous.customers.some((item) => item.id === customer.id) ? previous.customers.map((item) => item.id === customer.id ? { ...customer, version: item.version + 1 } : item) : [...previous.customers, { ...customer, version: 1 }] }))
+    setCustomerNotice('Cliente salvo na demonstração. Nenhum dado foi gravado de forma permanente.')
+    closeCustomerEditor()
+  }
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null)
+  function chooseCustomer(id: string | null) { setSelectedCustomerId(id); window.location.hash = '/vendas/nova' }
   const [feedback, setFeedback] = useState('')
   const [cashMovement, setCashMovement] = useState<{ kind: ManualCashKind; sessionNumber: number } | null>(null)
   const [closingSession, setClosingSession] = useState<number | null>(null)
   const [cashFeedback, setCashFeedback] = useState('')
   const movementVisible = activeId === 'caixa' && route === '/caixa' && cashMovement !== null
   useEffect(() => {
-    const clearMovement = () => { setCashMovement(null); setClosingSession(null); setStockMovement(null) }
+    const clearMovement = () => { setCashMovement(null); setClosingSession(null); setStockMovement(null); setCustomerEditor(null); setCreditMovement(null) }
     window.addEventListener('hashchange', clearMovement)
     return () => window.removeEventListener('hashchange', clearMovement)
   }, [])
@@ -83,9 +121,19 @@ export default function App() {
   function completeSale(sale: Sale) {
     setDemo((previous) => {
       if (previous.sales.some((item) => item.id === sale.id) || !previous.sessions.some((session) => session.number === sale.cashSession && !session.closedAt && session.terminal === demoTerminal)) return previous
-      return { sales: [sale, ...previous.sales], sessions: registerCashSale(previous.sessions, sale) }
+      return { ...previous, sales: [simulateAutomaticPrint(sale,preferences), ...previous.sales], sessions: registerCashSale(previous.sessions, sale) }
     })
     setFeedback('Venda de demonstração #' + sale.number + ' adicionada ao histórico. Nenhum pagamento real foi processado.')
+  }
+  function cancelSale(id: string, reason: string, authorized: boolean) {
+    const at = new Date().toISOString()
+    setDemo((previous) => {
+      const original = previous.sales.find((sale) => sale.id === id)
+      if (!original) return previous
+      const cancelled = cancelDemoSale(original, reason, authorized, at)
+      if (cancelled === original) return previous
+      return { ...previous, sales: previous.sales.map((sale) => sale.id === id ? cancelled : sale), sessions: registerCashCancellation(previous.sessions, cancelled) }
+    })
   }
   function recordPrint(id: string) {
     updateSales((previous) => previous.map((sale) => sale.id === id ? { ...sale, printCount: (sale.printCount ?? 0) + 1 } : sale))
@@ -123,7 +171,7 @@ export default function App() {
         <div className="sidebar-footer" aria-label="Venprox"><span className="brand-symbol" aria-hidden="true">V</span><span className="brand-caption">Venprox</span></div>
       </aside>
       <main className="workspace" id="conteudo" tabIndex={-1} aria-label={active.label}>
-        {activeId !== 'vendas' && activeId !== 'caixa' && activeId !== 'produtos' && activeId !== 'estoque' && <h1 className="visually-hidden">{active.label}</h1>}
+        {activeId !== 'vendas' && activeId !== 'caixa' && activeId !== 'produtos' && activeId !== 'estoque' && activeId !== 'clientes' && activeId !== 'contas-a-pagar' && activeId !== 'relatorios' && activeId !== 'configuracoes' && <h1 className="visually-hidden">{active.label}</h1>}
         {activeId === 'estoque' && stockNotice && <p className="sale-feedback" role="status">{stockNotice}</p>}
         <StockPage active={activeId === 'estoque'} products={products} movements={stock.movements} onMovement={(product) => { stockReturnFocus.current = document.activeElement as HTMLElement; setStockMovement(product); setStockNotice('') }} />
         {activeId === 'estoque' && stockMovement && <StockMovementDialog state={stock} initialProduct={stockMovement} onClose={closeStockMovement} onConfirm={(command) => {
@@ -133,19 +181,26 @@ export default function App() {
           setStockNotice('Movimento registrado na demonstração. Saldo e histórico atualizados apenas em memória.')
           closeStockMovement()
         }} />}
+        {activeId === 'clientes' && customerNotice && <p className="sale-feedback" role="status">{customerNotice}</p>}
+        <CustomersPage active={activeId === 'clientes' && !creditActive} customers={customers} selecting={route === '/clientes/selecionar'} onSelect={chooseCustomer} onEdit={editCustomer} balanceOf={(id) => creditBalance(demo.creditEntries, id)} onCredit={(customer) => { creditReturnFocus.current = document.activeElement as HTMLElement; window.location.hash = '/clientes/fiado/' + customer.id }} blocked={customerEditor !== null} />
+        <CreditPage active={creditActive} customer={creditCustomer} entries={demo.creditEntries} blocked={customerEditor !== null || creditMovement !== null} onEdit={editCustomer} onMovement={(action, original) => { if (creditCustomer) { creditMovementFocus.current = document.activeElement as HTMLElement; setCreditMovement({ customerId: creditCustomer.id, action, original }); setCustomerNotice('') } }} onBack={() => { window.location.hash = '/clientes'; requestAnimationFrame(() => creditReturnFocus.current?.focus()) }} />
+        {creditActive && creditMovement && creditCustomer?.id === creditMovement.customerId && <CreditDialog customer={creditCustomer} action={creditMovement.action} original={creditMovement.original} state={demo} onClose={closeCreditMovement} onOpenCash={(amount) => setDemo((previous) => ({ ...previous, sessions: openDemoSession(previous.sessions, amount, new Date().toISOString()) }))} onConfirm={(command) => {
+          const error = validateCreditCommand(demo, command)
+          if (error) return error
+          setDemo((previous) => registerCreditCommand(previous, command))
+          setCustomerNotice('Lançamento registrado na demonstração. Histórico, dívida e eventual movimento de caixa atualizados em memória.')
+          closeCreditMovement()
+        }} />}
+        {activeId === 'clientes' && customerEditor && <CustomerEditor customer={customerEditor === 'new' ? undefined : customerEditor} customers={customers} onSave={saveCustomer} onClose={closeCustomerEditor} />}
+        <SyncPage active={route === '/configuracoes/envios'} sales={sales} onBack={() => { setSettingsTab('sync'); setSettingsReturnFocus('settings-sync-button'); window.location.hash = '/configuracoes' }} />
+        <RecoveryPage active={route === '/configuracoes/recuperacao'} counts={{sales:sales.length,products:products.length,customers:customers.length}} pendingSales={sales.filter((sale) => sale.sync === 'Pendente').length} onBack={() => { setSettingsTab('sync'); setSettingsReturnFocus('settings-recovery-button'); window.location.hash = '/configuracoes' }} onReviewCash={() => { window.location.hash = '/caixa' }} />
+        <SettingsPage returnFocusId={settingsReturnFocus} onRecovery={() => { setSettingsReturnFocus('settings-recovery-button'); window.location.hash = '/configuracoes/recuperacao' }} tab={settingsTab} onTabChange={(tab) => { setSettingsTab(tab); setSettingsReturnFocus(undefined) }} active={activeId === 'configuracoes' && route !== '/configuracoes/envios' && route !== '/configuracoes/recuperacao'} onOpenSync={() => { setSettingsReturnFocus('settings-sync-button'); window.location.hash = '/configuracoes/envios' }} preferences={preferences} pendingSales={sales.filter((sale) => sale.sync === 'Pendente').length} onSave={(command) => { const error = validatePreferences(preferences,command); if (error) return error; setPreferences((current) => applyPreferences(current,command)) }} />
+        <ReportsPage active={activeId === 'relatorios'} sales={sales} sessions={sessions} products={products} onCancel={cancelSale} onPrint={recordPrint} />
+        <BillsArea active={activeId === 'contas-a-pagar'} route={route} />
         <ProductsPage active={activeId === 'produtos'} products={products} categories={categories} onCategorySave={saveCategory} onSave={saveProduct} />
         {activeId === 'vendas' && !newSaleActive && feedback && <div className="sale-feedback" role="status"><span>{feedback}</span><button aria-label="Fechar mensagem" onClick={() => setFeedback('')}><AppIcon name="close" size={18} /></button></div>}
-        <SalesHistory active={activeId === 'vendas' && !newSaleActive} route={route} sales={sales} onCancel={(id, reason, authorized) => {
-          const at = new Date().toISOString()
-          setDemo((previous) => {
-            const original = previous.sales.find((sale) => sale.id === id)
-            if (!original) return previous
-            const cancelled = cancelDemoSale(original, reason, authorized, at)
-            if (cancelled === original) return previous
-            return { sales: previous.sales.map((sale) => sale.id === id ? cancelled : sale), sessions: registerCashCancellation(previous.sessions, cancelled) }
-          })
-        }} onPrint={recordPrint} />
-        <NewSale products={products} active={newSaleActive} route={route} sales={sales} cashSession={currentSession} opening={cashOpening} onOpenCash={() => { window.location.hash = '/vendas/nova/abertura' }} nextNumber={Math.max(...sales.map((sale) => sale.number)) + 1} onComplete={completeSale} onPrint={recordPrint} onSync={(id, sync) => updateSales((previous) => previous.map((sale) => sale.id === id ? { ...sale, sync } : sale))} />
+        <SalesHistory active={activeId === 'vendas' && !newSaleActive} route={route} sales={sales} onCancel={cancelSale} onPrint={recordPrint} />
+        <NewSale allowSalesWithoutStock={preferences.allowSalesWithoutStock} customers={customers} selectedCustomerId={selectedCustomerId} onCustomerChange={setSelectedCustomerId} onBrowseCustomers={() => { window.location.hash = '/clientes/selecionar' }} products={products} active={newSaleActive} route={route} sales={sales} cashSession={currentSession} opening={cashOpening} onOpenCash={() => { window.location.hash = '/vendas/nova/abertura' }} nextNumber={Math.max(...sales.map((sale) => sale.number)) + 1} onComplete={completeSale} onPrint={recordPrint} onSync={(id, sync) => updateSales((previous) => previous.map((sale) => sale.id === id ? { ...sale, sync } : sale))} />
         {activeId === 'caixa' && cashFeedback && <div className="sale-feedback" role="status"><span>{cashFeedback}</span><button aria-label="Fechar mensagem" onClick={() => setCashFeedback('')}><AppIcon name="close" size={18} /></button></div>}
         <CashPage key={sessions.find((session) => session.closing)?.closing?.id ?? 'cash'} active={activeId === 'caixa'} route={route} sessions={sessions} onClosing={() => { if (currentSession) { setCashFeedback(''); setClosingSession(currentSession.number) } }} onMovement={(kind) => { if (currentSession) { setCashFeedback(''); setCashMovement({ kind, sessionNumber: currentSession.number }) } }} onOpen={() => { window.location.hash = '/caixa/abertura' }} />
         {movementVisible && currentSession?.number === cashMovement.sessionNumber && <CashMovementDialog session={currentSession} initialKind={cashMovement.kind} onClose={closeMovement} onConfirm={(command) => {

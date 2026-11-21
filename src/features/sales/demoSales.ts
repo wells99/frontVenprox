@@ -5,27 +5,29 @@ export type Sale = {
   date: string
   time: string
   recordedAt?: string
-  items: { name: string; quantity: number; priceCents: number }[]
+  items: { productId?: string; name: string; quantity: number; priceCents: number; costCents?: number }[]
   payment: PaymentMethod | 'Misto'
   discountCents?: number
   payments?: { method: PaymentMethod; appliedCents: number; tenderedCents: number; changeCents: number }[]
   notes?: string
+  customerId?: string
   customer: string
   operator: string
   cashSession: number
   status: 'Concluída' | 'Cancelada'
   sync: 'Recebida' | 'Pendente'
   cancellation?: { reason: string; operator: string; at: string }
+  automaticPrintProfile?: string
   printCount?: number
 }
 
 // Massa fixa e inteiramente fictícia para validar T01 sem banco ou integração.
 const products = [
-  [{ name: 'Água mineral 500 ml', quantity: 2, priceCents: 250 }, { name: 'Sorvete de castanha', quantity: 1, priceCents: 1800 }],
-  [{ name: 'Café', quantity: 1, priceCents: 350 }],
-  [{ name: 'Chocolate ao leite', quantity: 2, priceCents: 450 }],
-  [{ name: 'Biscoito recheado', quantity: 1, priceCents: 390 }, { name: 'Água mineral 500 ml', quantity: 1, priceCents: 250 }],
-  [{ name: 'Refrigerante lata', quantity: 2, priceCents: 600 }],
+  [{ productId: 'water', costCents: 120, name: 'Água mineral 500 ml', quantity: 2, priceCents: 250 }, { productId: 'icecream', costCents: 1100, name: 'Sorvete de castanha', quantity: 1, priceCents: 1800 }],
+  [{ productId: 'coffee', costCents: 100, name: 'Café', quantity: 1, priceCents: 350 }],
+  [{ productId: 'chocolate', costCents: 280, name: 'Chocolate ao leite', quantity: 2, priceCents: 450 }],
+  [{ productId: 'cookies', costCents: 210, name: 'Biscoito recheado', quantity: 1, priceCents: 390 }, { productId: 'water', costCents: 120, name: 'Água mineral 500 ml', quantity: 1, priceCents: 250 }],
+  [{ productId: 'soda', costCents: 350, name: 'Refrigerante lata', quantity: 2, priceCents: 600 }],
   [{ name: 'Item avulso — salgadinho', quantity: 1, priceCents: 500 }],
 ]
 const methods: PaymentMethod[] = ['Dinheiro', 'Pix', 'Crédito', 'Débito']

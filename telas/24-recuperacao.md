@@ -1,6 +1,8 @@
+FEITO - 20/11/2026 (simulação)
+
 # T24 — Reutilização e recuperação de dados
 
-**Tipo:** assistente opcional. **Estado:** especificada, não implementada. **Ordem:** 24. **Data:** 20/11/2026.
+**Tipo:** assistente opcional. **Estado:** implementada em simulação, por solicitação explícita do responsável. **Ordem:** 24. **Data:** 20/11/2026.
 
 [Voltar ao roteiro](../PLANO-DE-TELAS.md) · [Guia geral](../../docs/frontend.md)
 
@@ -26,3 +28,11 @@ Validar teclado, foco visível, vazio, erro e carregamento sem perder contexto. 
 
 Implementar esta unidade isoladamente quando chegar sua vez, montando-a na estrutura T00. Não criar as outras telas por antecipação. Nesta fase de frontend, usar apenas dados fictícios identificados quando necessários; persistência, permissões efetivas, impressão, sincronização e Google dependem de adaptadores futuros. Prototipar ação não comprova operação real.
 
+
+## Implementação e continuidade
+
+Assistente opcional autorizado nesta rodada, em `/configuracoes/recuperacao`, sem torná-lo primeiro uso obrigatório. Origens: dados deste computador (padrão), backup fictício e nuvem fictícia. Mostra loja, compatibilidade, corte, última confirmação do exemplo, contagens disponíveis e terminal. Validação em cópia isolada, progresso em memória, falha/nova tentativa e retomada da etapa ao navegar na mesma sessão. Outra loja, versão incompatível, ilegibilidade, indisponibilidade e origem vazia bloqueiam conclusão. Ilegibilidade não vira fila vazia; nuvem não conhece a fila local.
+
+Concluir exige conferir corte/abrangência e identificação do terminal. O resultado não promove dados à base em uso nem refaz operações. A saída para Caixa mantém abertura explícita pela T06. Voltar à T22 restaura a seção e o foco. Recarregar reinicia a simulação. Não há leitura de arquivos, restauração, limpeza, detecção de reinstalação ou acesso à nuvem. Esses adaptadores e troca atômica real continuam futuros.
+
+Seis testes de recuperação e três de envios adicionados; total de 50 testes aprovados, com build/lint. Fluxos de erro, conferência obrigatória, conclusão e retorno conferidos no navegador. Pastas de testes e capturas preservadas, com roteiro reutilizável em `tests/README.md`.

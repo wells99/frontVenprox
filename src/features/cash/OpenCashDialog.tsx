@@ -5,7 +5,7 @@ import { money } from '../sales/demoSales'
 import { demoOperator, demoTerminal } from './cashDemo'
 import './cash.css'
 
-export function OpenCashDialog({ origin, onClose, onOpen }: { origin: 'sale' | 'cash'; onClose: () => void; onOpen: (amount: number) => void }) {
+export function OpenCashDialog({ origin, onClose, onOpen }: { origin: 'sale' | 'cash' | 'credit'; onClose: () => void; onOpen: (amount: number) => void }) {
   const [value, setValue] = useState('')
   const [busy, setBusy] = useState(false)
   const [fail, setFail] = useState(false)
@@ -27,7 +27,7 @@ export function OpenCashDialog({ origin, onClose, onOpen }: { origin: 'sale' | '
   return <DemoDialog title="Abrir caixa" eyebrow="Abertura · dados fictícios" onClose={onClose} locked={busy} className="cash-opening-dialog">
     <form onSubmit={(event) => { event.preventDefault(); open() }} onKeyDown={(event) => { if (event.key === 'Enter' && event.repeat) event.preventDefault() }}>
       <div className="cash-opening-body">
-        <p className="cash-opening-intro">{origin === 'sale' ? 'Abra o caixa antes de iniciar a venda. Ao concluir, você retorna à montagem.' : 'Informe o dinheiro que já está na gaveta para iniciar esta sessão.'}</p>
+        <p className="cash-opening-intro">{origin === 'credit' ? 'Abra o caixa para registrar este recebimento ou reversão. Ao concluir, você retorna ao lançamento de fiado com os dados preservados.' : origin === 'sale' ? 'Abra o caixa antes de iniciar a venda. Ao concluir, você retorna à montagem.' : 'Informe o dinheiro que já está na gaveta para iniciar esta sessão.'}</p>
         <dl className="cash-identification"><div><dt>Terminal</dt><dd>{demoTerminal}</dd></div><div><dt>Operador</dt><dd>{demoOperator}</dd></div></dl>
         <label className="cash-opening-label" htmlFor="cash-opening-value">Valor inicial em dinheiro (R$)</label>
         <input data-initial-focus ref={inputRef} id="cash-opening-value" className="cash-opening-input" inputMode="decimal" autoComplete="off" placeholder="0,00" value={value} disabled={busy} aria-invalid={Boolean(error)} aria-describedby={'cash-opening-help' + (error ? ' cash-opening-error' : '')} onChange={(event) => { setValue(event.target.value); setError('') }} />

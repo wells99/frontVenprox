@@ -6,6 +6,7 @@ import type { Sale } from './demoSales'
 import './detail.css'
 
 type Props = {
+  returnLabel?: string
   sale?: Sale
   onClose: () => void
   onCancel: (id: string, reason: string, authorized: boolean) => void
@@ -13,7 +14,7 @@ type Props = {
 }
 type Scenario = 'normal' | 'loading' | 'error' | 'empty'
 
-export function SaleDetail({ sale, onClose, onCancel, onPrint }: Props) {
+export function SaleDetail({ sale, onClose, onCancel, onPrint, returnLabel = 'Voltar ao histórico' }: Props) {
   const [scenario, setScenario] = useState<Scenario>('normal')
   const [view, setView] = useState<'detail' | 'receipt'>('detail')
   const [cancelling, setCancelling] = useState(false)
@@ -111,7 +112,7 @@ export function SaleDetail({ sale, onClose, onCancel, onPrint }: Props) {
           </div>
           <aside className="detail-summary" aria-label="Resumo da venda"><h3>Resumo</h3><dl className="detail-totals"><div><dt>Subtotal</dt><dd>{money(subtotal)}</dd></div><div><dt>Desconto</dt><dd>− {money(sale.discountCents ?? 0)}</dd></div><div className="detail-total"><dt>Total</dt><dd>{money(totalCents(sale))}</dd></div></dl>
             <div className="detail-sync"><span className={'sync-badge ' + (sale.sync === 'Pendente' ? 'pending' : 'received')}>{sale.sync === 'Pendente' ? 'Envio pendente' : 'Envio recebido'} · simulado</span><p>Dados apenas em memória. Nenhuma informação foi enviada a um servidor.</p></div>
-            <button ref={receiptRef} className="sales-secondary" onClick={() => setView('receipt')}><AppIcon name="printer" size={17} />Ver comprovante</button><p className="detail-hint">Comprovante não fiscal.<br />Impressão automática desligada.</p>
+            <button ref={receiptRef} className="sales-secondary" onClick={() => setView('receipt')}><AppIcon name="printer" size={17} />Ver comprovante</button><p className="detail-hint">Comprovante não fiscal.<br />{sale.automaticPrintProfile ? 'Impressão automática simulada nesta venda (' + sale.automaticPrintProfile + ').' : 'Impressão automática não solicitada nesta venda.'}</p>
           </aside>
         </div>}
         <div className="detail-print"><button className="sales-secondary" disabled={!printerAvailable || Boolean(busy)} onClick={print}><AppIcon name="printer" size={17} />{busy === 'print' ? 'Simulando impressão…' : sale.printCount ? 'Simular reimpressão' : 'Simular impressão'}</button><span>{!printerAvailable ? 'Impressora indisponível no cenário.' : (sale.printCount ?? 0) > 0 ? sale.printCount + ' impressão(ões) simulada(s) nesta sessão.' : 'Nenhuma impressão simulada nesta sessão.'}</span></div>
@@ -123,6 +124,6 @@ export function SaleDetail({ sale, onClose, onCancel, onPrint }: Props) {
       </>}
       {sale && <details className="demo-controls detail-scenarios"><summary>Cenários de demonstração</summary><fieldset disabled={Boolean(busy)}><legend className="visually-hidden">Cenários do detalhe</legend><label>Consulta<select value={scenario} onChange={(event) => { setScenario(event.target.value as Scenario); setCancelling(false); setView('detail') }}><option value="normal">Normal</option><option value="loading">Carregando</option><option value="error">Falha de consulta</option><option value="empty">Venda não encontrada</option></select></label><label><input type="checkbox" checked={authorized} onChange={(event) => setAuthorized(event.target.checked)} />Permitir cancelamento (simulação)</label><label><input type="checkbox" checked={failCancel} onChange={(event) => setFailCancel(event.target.checked)} />Falha de cancelamento</label><label><input type="checkbox" checked={printerAvailable} onChange={(event) => setPrinterAvailable(event.target.checked)} />Impressora disponível (simulação)</label><label><input type="checkbox" checked={failPrint} onChange={(event) => setFailPrint(event.target.checked)} />Falha de impressão</label></fieldset></details>}
     </div>
-    <footer className="detail-footer"><span>{busy ? 'Aguarde a simulação…' : ready ? 'Consulta de demonstração · sem persistência' : 'O contexto do histórico foi preservado.'}</span><button data-initial-focus className="sales-primary" disabled={Boolean(busy)} onClick={onClose}>Voltar ao histórico <kbd>Esc</kbd></button></footer>
+    <footer className="detail-footer"><span>{busy ? 'Aguarde a simulação…' : ready ? 'Consulta de demonstração · sem persistência' : 'O contexto da consulta foi preservado.'}</span><button data-initial-focus className="sales-primary" disabled={Boolean(busy)} onClick={onClose}>{returnLabel} <kbd>Esc</kbd></button></footer>
   </DemoDialog>
 }
